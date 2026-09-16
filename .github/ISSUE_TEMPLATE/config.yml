@@ -1,0 +1,13 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Rò rỉ dữ liệu nội bộ — ĐỪNG mở issue công khai
+    url: https://github.com/security/advisories
+    about: >
+      Nếu bạn thấy repo này đang lộ tên thật, host nội bộ, token hay dữ liệu của một
+      tổ chức, đừng mở issue công khai vì làm vậy là khuếch đại rò rỉ. Báo riêng cho
+      người sở hữu repo qua Security Advisory hoặc liên hệ trực tiếp.
+  - name: Câu hỏi cách dùng
+    url: https://github.com/.../discussions
+    about: >
+      Hỏi cách dùng khung, cách gắn vào project, cách viết skill — dùng Discussions.
+      Issue để dành cho lỗi và đề xuất thay đổi khung.

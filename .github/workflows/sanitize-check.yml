@@ -1,0 +1,101 @@
+name: Kiểm rò rỉ dữ liệu nội bộ
+
+# Vì sao có workflow này: khung này là repo công khai, nhưng nó được dùng bên trong
+# các project thật. Rủi ro lớn nhất không phải lỗi code — mà là ai đó copy một đoạn
+# ví dụ từ project thật (tên khách hàng, host nội bộ, mã ticket, tên đồng nghiệp)
+# vào đây rồi commit. Một lần lọt là không rút lại được.
+#
+# Job này chạy đúng bộ quét mà bản khung đã dùng lúc bóc tách, nên luật nằm ở một chỗ:
+# tools/sanitize-check.py. Sửa luật ở đó thì CI đổi theo, không phải sửa hai nơi.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ro-ri:
+    name: Quét dấu vết nội bộ
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Quét nội dung — 16 lớp rò rỉ
+        run: python tools/sanitize-check.py
+
+      - name: Chặn file secret bị commit nhầm
+        run: |
+          # Bước trên đọc NỘI DUNG. Bước này chặn theo TÊN FILE — hai lớp khác nhau,
+          # vì một file .env rỗng vẫn không được phép nằm trong repo.
+          bad=$(git ls-files | grep -E \
+            '(^|/)\.env($|\.)|\.local\.(yaml|yml|json)$|(^|/)state_.*\.json$|\.(pem|key|p12|pfx)$' \
+            | grep -v '^\.env\.example$' || true)
+          if [ -n "$bad" ]; then
+            echo "::error::Có file secret bị commit:"
+            echo "$bad"
+            exit 1
+          fi
+          echo "Không có file secret nào được track."
+
+      - name: Chặn project thật bị commit vào khung
+        run: |
+          # Projects/ phải luôn rỗng trong repo khung — chỉ có README giải thích.
+          # Project thật sống trong fork/clone của từng đội, không đẩy ngược lên đây.
+          extra=$(git ls-files 'Projects/*' | grep -v '^Projects/README.md$' || true)
+          if [ -n "$extra" ]; then
+            echo "::error::Projects/ phải rỗng trong repo khung. Đang có:"
+            echo "$extra"
+            exit 1
+          fi
+          echo "Projects/ rỗng đúng như thiết kế."
+
+  cu-phap:
+    name: Cú pháp Python và YAML
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cài phụ thuộc kiểm tra
+        run: pip install --quiet pyyaml
+
+      - name: Kiểm cú pháp Python
+        run: |
+          python -m compileall -q tools .claude/hooks
+          echo "Cú pháp Python OK."
+
+      - name: Kiểm cú pháp YAML
+        env:
+          PYTHONIOENCODING: utf-8
+        run: |
+          python - <<'PY'
+          import pathlib, sys, yaml
+
+          BO_QUA = {".git", "node_modules", ".venv", "__pycache__"}
+          loi, dem = [], 0
+          for p in sorted(pathlib.Path(".").rglob("*.y*ml")):
+              if BO_QUA & set(p.parts):
+                  continue
+              dem += 1
+              try:
+                  list(yaml.safe_load_all(p.read_text(encoding="utf-8")))
+              except Exception as e:
+                  loi.append("%s: %s" % (p, str(e).splitlines()[0]))
+          if loi:
+              print("::error::YAML hỏng:")
+              for l in loi:
+                  print("  ", l)
+              sys.exit(1)
+          print("Cú pháp YAML OK — %d file." % dem)
+          PY

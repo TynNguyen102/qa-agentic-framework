@@ -1,0 +1,79 @@
+name: Đề xuất bổ sung khung
+description: Thêm skill, sửa quy trình, đổi schema hoặc chuẩn trong khung
+labels: ["đề xuất"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Câu hỏi gác cổng
+
+        **Thay đổi này có đúng cho MỌI project dùng khung không?**
+
+        Nếu nó chỉ đúng cho một project — nó thuộc về `Projects/<tên>/` trong bản clone
+        của đội đó, không phải khung. Đây là ranh giới hay bị vượt nhất.
+
+        ⚠️ Đừng dán tên thật, host nội bộ, mã ticket thật hay secret.
+
+  - type: textarea
+    id: van-de
+    attributes:
+      label: Vấn đề có thật nào dẫn tới đề xuất này
+      description: |
+        Mô tả tình huống đã xảy ra, không mô tả giải pháp. Đề xuất mạnh nhất là đề xuất
+        sinh ra từ một lần làm sai hoặc một lần suýt sai.
+      placeholder: "Khi retest một bug, không có chỗ nào bắt buộc ghi lại phép đo nào phân biệt được hai nhánh, nên đã kết luận nhầm 'chưa deploy'."
+    validations:
+      required: true
+
+  - type: textarea
+    id: de-xuat
+    attributes:
+      label: Đề xuất làm gì
+    validations:
+      required: true
+
+  - type: dropdown
+    id: pham-vi
+    attributes:
+      label: Chạm vào phần nào
+      multiple: true
+      options:
+        - "Skill (.claude/skills + .agents/skills)"
+        - "Config / schema (Config/QA-Agent)"
+        - "Governance (cần cổng G6)"
+        - "Tool (tools/)"
+        - "Hook (.claude/hooks)"
+        - "Template / scaffold"
+        - "Tài liệu"
+    validations:
+      required: true
+
+  - type: textarea
+    id: pha-gi
+    attributes:
+      label: Phá vỡ cái gì đang chạy không
+      description: |
+        Người đang dùng khung pull bản này về thì có phải sửa gì không. Nếu có thì liệt kê
+        các bước. Nếu không thì ghi "không phá gì".
+    validations:
+      required: true
+
+  - type: textarea
+    id: nghiem-thu
+    attributes:
+      label: Nghiệm thu bằng gì
+      description: |
+        Làm sao biết đề xuất này đã xong và chạy đúng. Nếu không nêu được cách nghiệm thu
+        thì đề xuất chưa đủ chín để làm.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: xac-nhan
+    attributes:
+      label: Xác nhận
+      options:
+        - label: Thay đổi này đúng cho **mọi** project, không riêng project của tôi
+          required: true
+        - label: Nội dung tôi dán **không** chứa tên thật, host nội bộ hay secret
+          required: true

@@ -1,0 +1,76 @@
+name: Báo lỗi khung
+description: Một skill, tool, hook hoặc config trong khung chạy sai
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Trước khi điền
+
+        Repo này là **khung dùng chung**. Nếu lỗi chỉ xảy ra với dữ liệu của một project
+        cụ thể thì nhiều khả năng đó là vấn đề cấu hình project, không phải lỗi khung.
+
+        ⚠️ **Đừng dán tên thật, host nội bộ, mã ticket thật, token hay ảnh chưa che.**
+        Thay bằng placeholder: `<project>`, `DEMO-123`, `qauser01`, `example.local`.
+
+  - type: input
+    id: cho-nao
+    attributes:
+      label: Chỗ nào bị
+      description: Đường dẫn file hoặc tên skill/tool
+      placeholder: "tools/tc-status.py, hoặc .claude/skills/06-generate-functional-testcases"
+    validations:
+      required: true
+
+  - type: textarea
+    id: lam-gi
+    attributes:
+      label: Làm gì thì ra lỗi
+      description: Các bước tối thiểu để người khác dựng lại được
+      placeholder: |
+        1. Chạy `python tools/tc-status.py --check`
+        2. Trên file TC có khối `case:` với verdict là BLOCKED
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: thuc-te
+    attributes:
+      label: Thực tế ra gì
+      description: Dán nguyên văn output hoặc thông báo lỗi — đã che phần nhạy cảm
+    validations:
+      required: true
+
+  - type: textarea
+    id: mong-doi
+    attributes:
+      label: Đáng lẽ phải ra gì
+      description: Kèm nguồn nếu có — dòng nào trong schema, mục nào trong governance
+    validations:
+      required: true
+
+  - type: dropdown
+    id: tai-hien
+    attributes:
+      label: Tái hiện được không
+      options:
+        - "Lần nào cũng bị"
+        - "Thỉnh thoảng"
+        - "Mới thấy một lần"
+    validations:
+      required: true
+
+  - type: textarea
+    id: moi-truong
+    attributes:
+      label: Môi trường
+      placeholder: "Windows 11 / Python 3.12.4 / commit abc1234"
+
+  - type: checkboxes
+    id: xac-nhan
+    attributes:
+      label: Xác nhận
+      options:
+        - label: Nội dung tôi dán **không** chứa tên thật, host nội bộ, secret hay ảnh chưa che
+          required: true

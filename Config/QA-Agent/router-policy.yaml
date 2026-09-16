@@ -55,25 +55,30 @@ mandatory_prechain:
 # =====================================================================
 # 3. NEXT-SKILL RECOMMENDATION (brief §IX)
 # =====================================================================
+# Sửa 2026-09-16: khối này trước đây là một list trần, rồi có `hard_rule:` gắn thẳng vào cuối
+# list — YAML không cho trộn phần tử list với key mapping ở cùng cấp, nên CẢ FILE không parse
+# được. Bọc list vào `rules:` cho khớp đúng quy ước mà `mandatory_prechain` ở trên đang dùng
+# (mapping có description/sequence/hard_rule).
 next_skill_rules:
-  - {after: "01-review-requirements", condition: "luôn",                       next: "42-document-conflict-analysis"}
-  - {after: "42-document-conflict-analysis", condition: "có conflict BLOCKER", next: "HUMAN_GATE: conflict-resolution"}
-  - {after: "42-document-conflict-analysis", condition: "không có BLOCKER",    next: "43-risk-and-change-impact"}
-  - {after: "43-risk-and-change-impact", condition: "luôn",                    next: "44-test-advisor"}
-  - {after: "44-test-advisor", condition: "người dùng đã chọn scope",          next: "04-high-level-test-design"}
-  - {after: "04-high-level-test-design", condition: "functional",              next: "06-generate-functional-testcases"}
-  - {after: "04-high-level-test-design", condition: "có API/event",            next: "08-generate-api-testcases"}
-  - {after: "06|08", condition: "luôn",                                        next: "09-review-testcases"}
-  - {after: "09-review-testcases", condition: "pass review",                   next: "24-test-coverage-audit"}
-  - {after: "24-test-coverage-audit", condition: "coverage đạt",               next: "10-generate-test-data"}
-  - {after: "10-generate-test-data", condition: "luôn",                        next: "13-execute-approved-testcases"}
-  - {after: "13-execute-approved-testcases", condition: "có FAIL",             next: "39-issue-triage"}
-  - {after: "39-issue-triage", condition: "CONFIRMED_DEFECT + đủ confidence",  next: "36-log-jira-defect"}
-  - {after: "39-issue-triage", condition: "confidence thấp",                   next: "HUMAN_GATE: low-confidence-defect"}
-  - {after: "13-execute-approved-testcases", condition: "PASS ổn định, lặp lại được", next: "11-generate-automation-script"}
-  - {after: "11-generate-automation-script", condition: "dry-run pass",        next: "32-smoke-regression-testing"}
-  - {after: "32-smoke-regression-testing", condition: "ổn định qua nhiều build", next: "CI_CANDIDATE"}
-  - {after: "bất kỳ execution skill", condition: "kết thúc đợt",               next: "33-test-reporting"}
+  rules:
+    - {after: "01-review-requirements", condition: "luôn",                       next: "42-document-conflict-analysis"}
+    - {after: "42-document-conflict-analysis", condition: "có conflict BLOCKER", next: "HUMAN_GATE: conflict-resolution"}
+    - {after: "42-document-conflict-analysis", condition: "không có BLOCKER",    next: "43-risk-and-change-impact"}
+    - {after: "43-risk-and-change-impact", condition: "luôn",                    next: "44-test-advisor"}
+    - {after: "44-test-advisor", condition: "người dùng đã chọn scope",          next: "04-high-level-test-design"}
+    - {after: "04-high-level-test-design", condition: "functional",              next: "06-generate-functional-testcases"}
+    - {after: "04-high-level-test-design", condition: "có API/event",            next: "08-generate-api-testcases"}
+    - {after: "06|08", condition: "luôn",                                        next: "09-review-testcases"}
+    - {after: "09-review-testcases", condition: "pass review",                   next: "24-test-coverage-audit"}
+    - {after: "24-test-coverage-audit", condition: "coverage đạt",               next: "10-generate-test-data"}
+    - {after: "10-generate-test-data", condition: "luôn",                        next: "13-execute-approved-testcases"}
+    - {after: "13-execute-approved-testcases", condition: "có FAIL",             next: "39-issue-triage"}
+    - {after: "39-issue-triage", condition: "CONFIRMED_DEFECT + đủ confidence",  next: "36-log-jira-defect"}
+    - {after: "39-issue-triage", condition: "confidence thấp",                   next: "HUMAN_GATE: low-confidence-defect"}
+    - {after: "13-execute-approved-testcases", condition: "PASS ổn định, lặp lại được", next: "11-generate-automation-script"}
+    - {after: "11-generate-automation-script", condition: "dry-run pass",        next: "32-smoke-regression-testing"}
+    - {after: "32-smoke-regression-testing", condition: "ổn định qua nhiều build", next: "CI_CANDIDATE"}
+    - {after: "bất kỳ execution skill", condition: "kết thúc đợt",               next: "33-test-reporting"}
   hard_rule: "Không chạy skill kế tiếp khi precondition của nó chưa đạt — ghi BLOCKED thay vì chạy cho có."
 
 # =====================================================================

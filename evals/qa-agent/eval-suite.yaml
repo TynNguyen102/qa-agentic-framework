@@ -1,8 +1,9 @@
 schema_version: 1
 status: BASELINE_RUN_20260719T061732
 baseline_freshness: CURRENT_20260916      # da chay lai TOAN BO 51 case ngay 2026-09-16; xem runs: RUN_20260916T1000_FULL
-
- RUN_20260916T1000_FULL
+# Sua 2026-09-16: ngay duoi day tung co mot dong " RUN_20260916T1000_FULL" mo coi — khong phai
+# key, khong phai phan tu list, chi la manh van ban sot lai khi sua file. No lam CA FILE khong
+# parse duoc. Ma hieu RUN nay da duoc nhac o comment cua baseline_freshness ngay tren, nen bo.
 stale_reason: >
   known_limitations cua chinh file nay ghi "nen chay lai eval-suite moi khi SKILL.md router hoac
   Config/QA-Agent/*.yaml co thay doi lon". Tu 2026-07-19 den nay router da them mandatory pre-chain,
