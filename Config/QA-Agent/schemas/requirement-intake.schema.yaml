@@ -1,0 +1,83 @@
+schema_version: 1
+status: DRAFT            # DRAFT tới khi Lead review; chưa phải oracle
+updated_at: "2026-09-16"
+purpose: >
+  Chuẩn hoá output của bước intake/phân tích yêu cầu (skill 01-review-requirements) thành một object
+  máy đọc được, để router/orchestrator và các skill sau dùng lại mà không phải đọc lại nguyên tài liệu.
+  KHÔNG thay thế skill 01 — chỉ quy định hình dạng output của nó.
+consumed_by:
+  - "42-document-conflict-analysis"
+  - "43-risk-and-change-impact"
+  - "44-test-advisor"
+  - "qa-router (lập execution plan)"
+
+# --- Loại đầu vào workflow phải nhận được (brief §III) ---
+intake_types:
+  jira_ticket:        {id_field: issue_key, live_source: "Jira MCP / REST", cache: "Knowledge-Base/Confluence-Mirror"}
+  user_story:         {id_field: issue_key, notes: "AC nằm ở customfield hoặc description"}
+  acceptance_criteria: {id_field: ac_id}
+  task:               {id_field: issue_key}
+  bug_fix:            {id_field: issue_key, notes: "route 37-retest-jira-defect, không route 01"}
+  change_request:     {id_field: cr_id}
+  api_specification:  {id_field: spec_id, live_source: "OpenAPI/Swagger URL", cache: "Knowledge-Base/API-Specs/"}
+  openapi_swagger:    {id_field: spec_id, parse: true, notes: "dùng để sinh payload/boundary/schema check"}
+  ui_design:          {id_field: design_id, notes: "Figma/ảnh; nếu chỉ có ảnh thì ghi ASSUMED"}
+  database_schema:    {id_field: schema_id, cache: "Knowledge-Base/Domain-Rules/<module>/_db-reference.md"}
+  business_rule:      {id_field: rule_id, source: "Knowledge-Base/Domain-Rules/"}
+  policy:             {id_field: policy_id}
+  confluence_document: {id_field: page_id}
+  source_code_diff:   {id_field: commit_sha_or_range, live_source: "GitLab REST"}
+  merge_request:      {id_field: mr_iid, live_source: "GitLab REST"}
+  release_note:       {id_field: release_id}
+
+# --- Hình dạng output bắt buộc (brief §III) ---
+output_contract:
+  required_fields:
+    - intake_id                 # <TYPE>-<key>-<YYYYMMDD>
+    - intake_type               # một khoá trong intake_types
+    - source_refs               # list: {type, id, url, version_or_updated_at, pulled_at, reliability}
+    - requirement_summary
+    - business_goal
+    - actors_and_roles
+    - preconditions
+    - expected_behavior         # mỗi mục PHẢI dẫn rule_id hoặc source_ref
+    - inputs_and_outputs
+    - related_systems
+    - integrations_and_dependencies
+    - acceptance_criteria       # list {ac_id, statement, testable: true|false, reason_if_not}
+    - non_functional_requirements
+    - security_privacy_compliance_risk
+    - scope
+    - out_of_scope
+    - assumptions               # mỗi mục có nhãn ASSUMED + vì sao chưa xác minh được
+    - missing_information       # list {question, blocking: true|false, asked_to, asked_at}
+    - conflicts                 # list conflict_id, trỏ sang conflict-report.schema.yaml
+    - related_documents
+    - risk_level                # VERY_HIGH|HIGH|MEDIUM|LOW|NEED_CONFIRM
+    - impacted_components
+    - recommended_test_types    # list, trỏ sang 44-test-advisor
+    - required_skills           # list skill id
+    - required_human_decisions  # list, trỏ sang HUMAN_APPROVAL_GATES.md
+    - evidence_state            # CONFIRMED|INFERRED|ASSUMED|NOT_CHECKED cho intake này
+
+  field_rules:
+    expected_behavior: >
+      Mỗi dòng phải có nguồn. Không có nguồn thì KHÔNG được ghi vào đây — chuyển sang
+      missing_information hoặc assumptions. Đây là chỗ hay bị agent tự suy diễn nhất.
+    assumptions: "Ghi rõ điều gì sẽ sai nếu giả định này sai."
+    missing_information: "blocking=true nghĩa là không thể design test đúng nếu chưa có câu trả lời."
+    risk_level: "Không tự chấm nếu chưa chạy 43-risk-and-change-impact — ghi NEED_CONFIRM."
+
+prohibitions:
+  - "Không suy diễn requirement chưa có bằng chứng — thiếu thì ghi missing_information."
+  - "Không copy nguyên tài liệu vào output; chỉ trích đoạn liên quan (xem TOKEN_COST_OPTIMIZATION.md)."
+  - "Không dùng rule/AC của project khác làm expected (eval case ZT-001)."
+  - "Không gán risk_level cao/thấp để biện minh cho việc bỏ test — dùng 44-test-advisor."
+
+validation:
+  hard_fail:
+    - "expected_behavior có mục không dẫn nguồn"
+    - "acceptance_criteria rỗng nhưng intake_type là user_story/jira_ticket"
+    - "evidence_state thiếu"
+  warn:
+    - "assumptions rỗng ở một US phức tạp (hiếm khi thật sự không có giả định nào)"

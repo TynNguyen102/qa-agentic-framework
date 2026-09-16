@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design Benchmark Testing"
+  short_description: "Define benchmark workload baseline and thresholds"
+  default_prompt: "Use $20-design-benchmark-testing for this QA task."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Execute Accessibility Testing"
+  short_description: "Execute accessibility checks and report barriers"
+  default_prompt: "Use $19-execute-accessibility-testing for this QA task."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Test Reporting"
+  short_description: "Produce traceable execution and quality reports"
+  default_prompt: "Use $33-test-reporting for this QA task."

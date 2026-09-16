@@ -1,0 +1,4 @@
+interface:
+  display_name: "Issue Triage"
+  short_description: "Triage duplicates, regressions, and new issues"
+  default_prompt: "Use $39-issue-triage to screen this issue, check duplicates and regressions, and recommend the controlled next action."

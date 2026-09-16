@@ -1,0 +1,4 @@
+interface:
+  display_name: "Functional Happy-path Testing"
+  short_description: "Validate critical functional happy paths"
+  default_prompt: "Use $15-functional-happy-path-testing for this QA task."

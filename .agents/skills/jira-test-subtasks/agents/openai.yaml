@@ -1,0 +1,4 @@
+interface:
+  display_name: "Jira Test Subtasks"
+  short_description: "Draft or create the two standard QA subtasks"
+  default_prompt: "Use $jira-test-subtasks to prepare the Create Testcase and Testing subtasks for this Jira story."

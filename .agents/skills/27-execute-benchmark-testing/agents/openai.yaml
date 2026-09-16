@@ -1,0 +1,4 @@
+interface:
+  display_name: "Execute Benchmark Testing"
+  short_description: "Run benchmarks and compare controlled baselines"
+  default_prompt: "Use $27-execute-benchmark-testing for this QA task."

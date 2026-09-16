@@ -1,0 +1,4 @@
+interface:
+  display_name: "Database Testing"
+  short_description: "Test data integrity transactions and migrations"
+  default_prompt: "Use $34-database-testing for this QA task."

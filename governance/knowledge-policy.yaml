@@ -1,0 +1,134 @@
+schema_version: 1
+status: ACTIVE
+updated_at: "2026-07-18"
+purpose: "Cho Codex, Claude và Workspace Agent học business rule của dự án đang active từ cùng nguồn canonical mà không tự biến observation thành product truth."
+
+separation_of_concerns:
+  task_instruction: "Yêu cầu hiện tại của người dùng quyết định scope, format và quyền thao tác."
+  product_truth: "Expected behavior phải đến từ nguồn có thẩm quyền của dự án đang active."
+  professional_method: "Skills và standards quyết định cách phân tích, thiết kế, thực thi và thu evidence."
+  memory: "Chat history hoặc agent memory chỉ hỗ trợ ngữ cảnh, không phải authoritative oracle."
+
+knowledge_states:
+  DRAFT: "Observation hoặc candidate rule mới thu thập; không dùng để kết luận PASS/FAIL."
+  NEED_CONFIRM: "Có evidence nhưng expected, scope, owner hoặc source conflict chưa được giải quyết."
+  APPROVED: "Đã được nguồn/owner có thẩm quyền xác nhận; được dùng làm test oracle trong scope ghi rõ."
+  SUPERSEDED: "Đã có rule mới thay thế; chỉ giữ cho lịch sử và traceability."
+  REJECTED: "Nhận định sai hoặc không áp dụng; không được tái sử dụng làm expected."
+
+authoritative_source_priority:
+  - approved_po_ba_or_product_decision
+  - approved_jira_acceptance_criteria_and_confluence_frs
+  - current_live_api_event_and_schema_contract
+  - approved_state_machine_permission_matrix_and_data_rules
+  - approved_ui_ux_security_accessibility_and_slo_policy
+  - verified_baseline_with_same_scope_and_version
+  - local_cached_reference_with_freshness_check
+
+required_rule_fields:
+  - id
+  - title
+  - statement
+  - module
+  - status
+  - scope
+  - sources
+  - source_version_or_updated_at
+  - verified_at
+  - owner
+  - applies_to
+  - supersedes
+  - keywords
+
+workflow:
+  capture:
+    output_state: DRAFT
+    rules:
+      - "Ghi observation và evidence riêng với interpretation."
+      - "Che secret, token, credential và dữ liệu cá nhân không cần thiết."
+  review:
+    rules:
+      - "Kiểm tra source authority, freshness, scope, reproducibility và conflict."
+      - "Nếu thiếu owner hoặc nguồn expected, chuyển NEED_CONFIRM."
+  promote:
+    allowed_transition: "DRAFT hoặc NEED_CONFIRM -> APPROVED"
+    approval_required: true
+    rules:
+      - "Ghi approver, thời điểm, scope và source version."
+      - "Agent không tự approve rule do chính agent phát hiện."
+  retrieve:
+    rules:
+      - "Chỉ tải rule liên quan module, role, layer, environment và task hiện tại."
+      - "Mọi expected result phải dẫn Rule ID hoặc authoritative source."
+      - "Chỉ APPROVED được dùng để kết luận PASS/FAIL."
+  supersede:
+    rules:
+      - "Không sửa lịch sử để che rule cũ; tạo rule mới và liên kết supersedes."
+      - "Ngừng dùng SUPERSEDED cho testcase mới."
+
+conflict_policy:
+  - "Không âm thầm chọn một source khi hai nguồn có thẩm quyền xung đột."
+  - "Ghi cả hai nguồn, scope/version và trả NEED_CONFIRM."
+  - "Live source mới hơn thắng local cache sau khi xác minh đúng project và scope."
+  - "API validation contract không tự động chứng minh UI/business expected; cần phân tách trách nhiệm từng layer."
+
+module_overview_artifact:
+  purpose: >
+    A second, narrower knowledge shape alongside the atomic rules above: a per-module narrative
+    overview (business purpose per screen/menu, key concepts, a cross-screen effect table, and a
+    self-check question list) meant to be read before designing/reviewing ANY feature in that
+    module — even a brand-new one no rule has been extracted for yet. Atomic rules
+    (`required_rule_fields` above) capture what a specific BRD/story said; this artifact captures
+    how the whole module fits together, which a single story's rule extraction usually never states
+    explicitly. Adapted 2026-09-05 from a cross-project review of a manual tester's module knowledge
+    file, which existing per-story rule extraction in this workspace did not have an equivalent for.
+  location: "Projects/<ACTIVE_PROJECT>/Knowledge-Base/Domain-Rules/<module>/_overview.md — one per module, template at Templates/Project-Scaffold/NEW-PROJECT-TEMPLATE/Knowledge-Base/Domain-Rules/_module-overview.template.md"
+  required_fields: [module, status, sources, verified_at, owner]
+  rules:
+    - "Same knowledge_states lifecycle as atomic rules (DRAFT -> NEED_CONFIRM -> APPROVED); a DRAFT overview is a reference to check assumptions against, not a PASS/FAIL oracle."
+    - "Does not replace atomic per-rule files — a specific business rule with its own AC/BR trace still needs its own rule entry; the overview only prevents missing a cross-screen effect that no single story's rule extraction would surface."
+    - "Update it when a reviewed rule or a real defect reveals a cross-screen effect it doesn't yet list — do not let it go stale while atomic rules keep getting added underneath it."
+
+db_reference_artifact:
+  purpose: >
+    A third, narrower knowledge shape alongside atomic rules and the module overview: per-module
+    database reference — connection/environment, data-flow between upstream source and the app's
+    own DB (source system -> ingestion/DAG -> app schema), field-by-field mapping with join keys,
+    known schema gaps/assumptions not yet confirmed by Dev, and pointers to existing reconciliation
+    validator scripts. Atomic rules capture business behavior; the module overview captures
+    cross-screen UI effect; this artifact captures the data layer those two rarely state explicitly
+    (which column maps to which upstream field, what the real join key is, which values are
+    normalized/enumerated). Added 2026-09-06 after migrating verified DB knowledge from a prior QA
+    repo (module `CMDB`) that this workspace's per-story rule extraction had no equivalent for —
+    this is exactly the gap `06-generate-functional-testcases`/`34-database-testing` hit when a
+    feature needs data-parity or field-mapping verification (e.g. DEMO-6566 `EXT-13`/`COV-SWI-033`)
+    and no source of truth for the mapping existed yet.
+  location: "Projects/<ACTIVE_PROJECT>/Knowledge-Base/Domain-Rules/<module>/_db-reference.md — one per module, only where the module's feature set actually needs DB-level verification (record counts, field mapping, reconciliation) beyond what the API/UI already exposes."
+  required_fields: [module, status, sources, verified_at, owner]
+  rules:
+    - "Same knowledge_states lifecycle as atomic rules (DRAFT -> NEED_CONFIRM -> APPROVED); a DRAFT db-reference is a reference to check field mappings/join keys against, not a PASS/FAIL oracle by itself."
+    - "A mapping marked 'verified' in the source material (real-data match, e.g. '100/100', '542/542') is stronger evidence than an unconfirmed assumption, but that verification happened in a different project/session — re-confirm against this project's own live schema/data before relying on it as this project's oracle; do not silently inherit it as APPROVED."
+    - "Keep every unresolved join-key/field-mapping gap explicitly flagged (NEED_CONFIRM / ASSUMPTION) rather than silently dropping it — an unconfirmed mapping is exactly the kind of thing a future session would otherwise re-derive from scratch or get wrong."
+    - "Real infrastructure details (DB host, port, credential config class name) may be included only when the active project has explicitly accepted that trade-off for this workspace's repo; when in doubt, ask rather than default to including or excluding them."
+    - "Does not replace the module overview or atomic rules — this only prevents re-deriving a data-layer mapping that already exists from a prior verified source."
+
+cross_agent_rules:
+  canonical_roots: [Knowledge-Base, Config/QA-Agent, governance]
+  consumers: [Codex, Claude, Workspace_Agent, other_authorized_AI]
+  rules:
+    - "Không duy trì bản business rule riêng theo từng AI."
+    - "Web Agent đọc live connector hoặc reference đã sync; không coi memory là bản mirror."
+    - "Agent output phải ghi rule/source đã sử dụng và unresolved conflicts."
+
+security_and_retention:
+  prohibited_content:
+    - passwords
+    - bearer_or_refresh_tokens
+    - session_cookies
+    - api_keys
+    - private_keys
+    - unnecessary_personal_data
+  rules:
+    - "Chỉ mirror tài liệu nằm trong scope dự án đang active và được phép lưu local."
+    - "Tài liệu restricted giữ nguyên access control; không copy vào repo chỉ để tiện tìm kiếm."
+    - "Cached references phải có source URL/id, pulled_at, source_updated_at/version và checksum khi có."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deep Coverage Testing"
+  short_description: "Find hidden state integration and adversarial gaps"
+  default_prompt: "Use $26-deep-coverage-testing for this QA task."

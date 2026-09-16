@@ -1,0 +1,4 @@
+interface:
+  display_name: "High-level Test Design"
+  short_description: "Design risk-based test conditions and coverage"
+  default_prompt: "Use $04-high-level-test-design for this QA task."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Retest Jira Defect"
+  short_description: "Read defect comments and verify fixes safely"
+  default_prompt: "Use $37-retest-jira-defect for this QA task."

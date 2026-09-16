@@ -1,0 +1,17 @@
+status: NOT_CONFIGURED
+project_key: NEED_CONFIRM
+issue_type: Subtask
+create_testcase:
+  title_format: null
+  description_sections: []
+testing:
+  title_format: null
+  description_sections: []
+required_live_metadata:
+  parent_field: null
+  mandatory_fields: []
+  custom_fields: []
+rules:
+  - "Fetch Jira create metadata before creating either subtask."
+  - "Return NEED_CONFIG: JIRA_SUBTASK_TITLES until both title formats are provided."
+  - "Draft by default; live creation requires explicit approval."

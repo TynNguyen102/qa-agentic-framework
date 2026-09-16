@@ -1,0 +1,9 @@
+$kind: collection
+id: 6318968b-27bd-4a5f-91f2-b94f8f989811
+name: Ingestion API Safe Assurance
+description: Local-only Ingestion SIT contract, unauthenticated security, and authenticated read-only checks. Mutating operations are intentionally excluded.
+variables:
+  gateway_base_url: https://INGESTION_SIT_HOST_PLACEHOLDER/ingestion
+  api_base_url: https://INGESTION_SIT_HOST_PLACEHOLDER/ingestion/api/v1
+  access_token: ""
+  tenant_id: ""

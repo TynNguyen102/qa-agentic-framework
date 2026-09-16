@@ -1,0 +1,52 @@
+schema_version: 1
+status: DRAFT
+member_alias: "replace-with-non-sensitive-alias"
+team_role: "QA"
+project_scopes: []
+role_modes: []
+
+authorization:
+  environments: []
+  tools_read_only: []
+  tools_write: []
+  approval_limits: []
+
+competencies:
+  requirements_and_business_analysis:
+    current_level: L0
+    target_level: L2
+    readiness: DESIGN_ONLY
+    evidence: []
+  functional_test_design:
+    current_level: L0
+    target_level: L2
+    readiness: DESIGN_ONLY
+    evidence: []
+  api_testing:
+    current_level: L0
+    target_level: L2
+    readiness: DESIGN_ONLY
+    evidence: []
+  bug_hunting_defect_and_retest:
+    current_level: L0
+    target_level: L2
+    readiness: DESIGN_ONLY
+    evidence: []
+  ui_e2e_and_automation:
+    current_level: L0
+    target_level: L2
+    readiness: DESIGN_ONLY
+    evidence: []
+
+learning_plan:
+  assigned_workflows: []
+  shadow_tasks: []
+  supervised_tasks: []
+  eval_case_ids: []
+
+reviews:
+  last_reviewed_at: null
+  reviewer_alias: null
+  promotion_decision: NOT_REVIEWED
+  notes: []
+

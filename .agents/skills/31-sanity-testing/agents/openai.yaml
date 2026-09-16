@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sanity Testing"
+  short_description: "Run focused post-change confidence checks"
+  default_prompt: "Use $31-sanity-testing for this QA task."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review Requirements"
+  short_description: "Review requirements and identify test gaps"
+  default_prompt: "Use $01-review-requirements for this QA task."

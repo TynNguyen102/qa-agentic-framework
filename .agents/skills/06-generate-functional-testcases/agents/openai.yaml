@@ -1,0 +1,4 @@
+interface:
+  display_name: "Generate Functional Testcases"
+  short_description: "Generate functional testcases in canonical format"
+  default_prompt: "Use $06-generate-functional-testcases for this QA task."

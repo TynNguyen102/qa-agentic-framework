@@ -1,0 +1,4 @@
+interface:
+  display_name: "Infrastructure and Session Testing"
+  short_description: "Test environment infrastructure and sessions"
+  default_prompt: "Use $35-infrastructure-session-testing for this QA task."

@@ -1,0 +1,65 @@
+schema_version: 1
+status: DRAFT
+updated_at: "2026-09-16"
+purpose: >
+  Hình dạng bắt buộc của một conflict phát hiện giữa hai nguồn có thẩm quyền.
+  Thực thi nguyên tắc đã có ở governance/knowledge-policy.yaml mục conflict_policy
+  ("không âm thầm chọn một source") bằng một record máy đọc được.
+produced_by: "42-document-conflict-analysis"
+consumed_by: ["01-review-requirements", "43-risk-and-change-impact", "44-test-advisor", "qa-router"]
+
+conflict_types:
+  EXPECTED_RESULT_MISMATCH: "Hai tài liệu quy định kết quả khác nhau cho cùng hành vi"
+  AC_VS_API_CONTRACT:       "Acceptance Criteria khác OpenAPI/live contract"
+  UI_VS_BUSINESS_RULE:      "UI design khác business rule"
+  NEW_VS_REGRESSION:        "Requirement mới mâu thuẫn hành vi regression cũ đang PASS"
+  SUPERSESSION:             "Tài liệu mới thay thế tài liệu cũ nhưng cũ vẫn đang được dùng"
+  EFFECTIVE_DATE_OVERLAP:   "Hai tài liệu hiệu lực chồng lấn/khác ngày"
+  POLICY_VS_PROJECT_RULE:   "Domain policy xung đột rule của project"
+  CROSS_TICKET_DEPENDENCY:  "Jira ticket này phụ thuộc/mâu thuẫn ticket khác"
+  MULTI_COMPONENT_IMPACT:   "Một thay đổi tác động nhiều component với kỳ vọng khác nhau"
+  STALE_RULE_IN_TESTCASE:   "Testcase đang dùng rule đã SUPERSEDED/REJECTED"
+
+severity:
+  BLOCKER:  "Không thể kết luận PASS/FAIL cho vùng ảnh hưởng tới khi giải quyết"
+  MAJOR:    "Có thể test tiếp nhưng một phần kết quả sẽ không đáng tin"
+  MINOR:    "Khác biệt về diễn đạt/phạm vi nhỏ, không đổi expected"
+
+record:
+  required_fields:
+    - conflict_id              # CONF-YYYYMMDD-NNN
+    - detected_at
+    - detected_by              # skill id + actor_alias
+    - conflict_type            # một khoá trong conflict_types
+    - severity
+    - blocking                 # true|false — BLOCKER luôn true
+    - statement_a              # {text, source_ref, version_or_updated_at, effective_date, authority_rank}
+    - statement_b              # cùng cấu trúc
+    - why_it_conflicts         # 1-3 câu, nêu rõ điểm loại trừ nhau
+    - affected_test_cases      # list TC id
+    - affected_components
+    - affected_requirements    # list AC/rule id
+    - proposed_resolution      # ĐỀ XUẤT, không phải quyết định
+    - required_owner_decision  # ai phải quyết (BA/PO/Dev Lead/Security owner)
+    - decision_status          # OPEN|ASKED|DECIDED|WITHDRAWN
+    - decision_record          # {decided_by, decided_at, chosen_source, rationale} — chỉ khi DECIDED
+    - evidence_state           # CONFIRMED|INFERRED — INFERRED khi chưa đọc được bản live
+
+  authority_rank_source: "governance/knowledge-policy.yaml mục authoritative_source_priority"
+
+rules:
+  - "Agent KHÔNG được tự chọn statement_a hay statement_b làm expected. proposed_resolution là đề xuất để người quyết."
+  - "Conflict BLOCKER chặn mọi verdict PASS/FAIL trong affected_components tới khi decision_status=DECIDED."
+  - "Conflict MAJOR/MINOR không chặn, nhưng mọi testcase liên quan phải mang nhãn conflict_id trong output."
+  - "Live source mới hơn thắng local cache SAU KHI xác minh đúng project + scope — không tự động thắng."
+  - "Không sửa/xoá conflict cũ; đóng bằng decision_record hoặc tạo conflict mới có supersedes."
+  - "Một conflict đã DECIDED phải sinh ra hành động: cập nhật rule, cập nhật testcase, hoặc ghi lý do không cần đổi gì."
+
+storage: "Projects/<ACTIVE_PROJECT>/Knowledge-Base/Conflicts/CONF-YYYYMMDD-NNN.yaml + một dòng trong Conflicts/INDEX.md"
+
+validation:
+  hard_fail:
+    - "blocking=false nhưng severity=BLOCKER"
+    - "statement_a hoặc statement_b thiếu source_ref"
+    - "decision_status=DECIDED nhưng thiếu decision_record"
+    - "proposed_resolution được viết như một quyết định đã chốt"

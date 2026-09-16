@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design Accessibility Testcases"
+  short_description: "Design accessibility coverage and testcases"
+  default_prompt: "Use $07-design-accessibility-testcases for this QA task."

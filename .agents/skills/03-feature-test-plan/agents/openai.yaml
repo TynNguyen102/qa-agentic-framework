@@ -1,0 +1,4 @@
+interface:
+  display_name: "Feature Test Plan"
+  short_description: "Create a detailed test plan for a feature"
+  default_prompt: "Use $03-feature-test-plan for this QA task."

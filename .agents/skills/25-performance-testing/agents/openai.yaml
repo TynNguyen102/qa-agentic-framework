@@ -1,0 +1,4 @@
+interface:
+  display_name: "Performance Testing"
+  short_description: "Test load stress spike soak and capacity"
+  default_prompt: "Use $25-performance-testing for this QA task."

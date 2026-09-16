@@ -1,0 +1,4 @@
+interface:
+  display_name: "Generate Test Data"
+  short_description: "Design valid invalid boundary and stateful data"
+  default_prompt: "Use $10-generate-test-data for this QA task."

@@ -1,0 +1,87 @@
+schema_version: 1
+status: DRAFT
+updated_at: "2026-09-16"
+purpose: >
+  Chuẩn hoá kết quả thực thi một testcase và evidence đi kèm. Bổ sung cho
+  Config/QA-Agent/canonical-testcase-schema.yaml (định nghĩa testcase) — file này định nghĩa
+  KẾT QUẢ CHẠY testcase đó. Thực thi luật "không claim PASS từ HTTP status" đã có ở qa-router.
+produced_by: ["13-execute-approved-testcases", "14", "19", "25", "27", "28", "32", "40", "41"]
+
+# --- 8 trạng thái chuẩn (brief §XX) ---
+status_enum:
+  PASS:              "Kết quả nghiệp vụ đúng expected, có readback ở lớp có thẩm quyền"
+  FAIL:              "Khác expected, đã loại trừ env/data/script"
+  BLOCKED:           "Không chạy được do phụ thuộc ngoài tầm (quyền, môi trường, data chưa có)"
+  NOT_RUN:           "Chưa tới lượt chạy"
+  SKIPPED:           "Cố ý bỏ, PHẢI có skip_reason + người chấp nhận"
+  INCONCLUSIVE:      "Chạy xong nhưng bằng chứng không đủ để kết luận (vd output rỗng không phân biệt được với lỗi)"
+  ENVIRONMENT_ERROR: "Lỗi do môi trường/dependency, KHÔNG phải sản phẩm"
+  AUTOMATION_ERROR:  "Lỗi do test code/locator/fixture/assertion/runner"
+
+failure_classification:
+  required_when: "status in [FAIL, INCONCLUSIVE, ENVIRONMENT_ERROR, AUTOMATION_ERROR]"
+  values: [PRODUCT_DEFECT, ENVIRONMENT_ISSUE, TEST_DATA_ISSUE, AUTOMATION_ISSUE, REQUIREMENT_CONFLICT, UNKNOWN]
+  rule: >
+    Chỉ PRODUCT_DEFECT mới được route sang 39-issue-triage/36-log-jira-defect.
+    UNKNOWN không được coi là PRODUCT_DEFECT — phải điều tra thêm hoặc chuyển human review.
+
+result:
+  required_fields:
+    - result_id
+    - testcase_id
+    - requirement_ids
+    - risk_ids
+    - run_id                   # nhóm các result cùng một lần chạy
+    - executed_at
+    - executed_by              # người hoặc actor_alias
+    - execution_mode           # MANUAL | AUTOMATED | AI_ASSISTED_MANUAL | AGENTIC_AUTOMATED | HYBRID
+    - environment              # tên env; PROD bị chặn theo qa-config TEST_POLICY
+    - build_or_version
+    - assurance_level          # L0..L4 thực tế đã dùng
+    - status                   # status_enum
+    - failure_classification   # theo rule ở trên
+    - expected                 # + nguồn (rule_id/AC/contract)
+    - actual
+    - readback                 # list {layer: UI|API|DB|EVENT|AUDIT, observed, matches_expected}
+    - evidence                 # list evidence record (dưới)
+    - evidence_state           # CONFIRMED | INFERRED | ASSUMED | NOT_CHECKED
+    - retry_count
+    - flaky_suspected          # true khi cùng TC cho kết quả khác nhau trong cùng build
+    - defect_refs              # Jira key nếu đã log
+    - notes
+
+# --- Evidence (brief §XX, §XXVII) ---
+evidence_record:
+  required_fields:
+    - evidence_id
+    - type                     # SCREENSHOT|VIDEO|HAR|REQUEST_RESPONSE|LOG|DB_QUERY_RESULT|TRACE|FILE_ARTIFACT|NOTE
+    - captured_at
+    - path_or_ref              # đường dẫn trong Modules/<m>/Sprint-N/Evidence/ hoặc Jira attachment id
+    - redaction_status         # NOT_NEEDED | REDACTED | PENDING_REDACTION
+    - redacted_items           # list loại đã che: token, cookie, password, PII, location, host nội bộ
+    - checksum                 # khi có
+    - supports                 # field nào của result nó chứng minh (expected/actual/readback)
+  rules:
+    - "Evidence có redaction_status=PENDING_REDACTION KHÔNG được đính lên Jira/Confluence."
+    - "Không lưu password, bearer/refresh token, session cookie, api key, private key (knowledge-policy.yaml)."
+    - "Ảnh chụp màn hình phải kiểm tra lộ Location/source/host nội bộ trước khi đính."
+
+pass_rules:
+  - "KHÔNG được kết luận PASS chỉ từ HTTP status code."
+  - "PASS yêu cầu ít nhất một readback ở lớp có thẩm quyền với matches_expected=true."
+  - "Danh sách rỗng / result set rỗng / test bị skip KHÔNG phải PASS — dùng INCONCLUSIVE hoặc BLOCKED."
+  - "expected phải dẫn nguồn APPROVED; nguồn DRAFT/NEED_CONFIRM chỉ cho ra INCONCLUSIVE + NEED_CONFIRM."
+  - "Output do model sinh ra: một mẫu duy nhất không chứng minh consistency — xem 40-ai-output-testing."
+
+retry_rules:
+  - "Retry chỉ hợp lệ cho nghi ngờ ENVIRONMENT_ERROR/AUTOMATION_ERROR, không dùng để làm mất FAIL."
+  - "Mọi retry phải ghi retry_count và giữ lại evidence của lần chạy đầu."
+  - "Kết quả khác nhau giữa các lần trong cùng build => flaky_suspected=true, KHÔNG tự chọn lần PASS."
+
+validation:
+  hard_fail:
+    - "status=PASS nhưng readback rỗng"
+    - "status=PASS nhưng evidence_state in [ASSUMED, NOT_CHECKED]"
+    - "status=SKIPPED nhưng thiếu skip_reason/người chấp nhận"
+    - "failure_classification=PRODUCT_DEFECT nhưng chưa loại trừ env/data/automation"
+    - "evidence có redaction_status=PENDING_REDACTION mà result đã được publish ra ngoài"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Master Test Plan"
+  short_description: "Project/milestone-level QA strategy spanning multiple sprints"
+  default_prompt: "Use $master-test-plan for this project/milestone strategy task."

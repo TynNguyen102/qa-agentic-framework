@@ -1,0 +1,37 @@
+status: NOT_CONFIGURED
+project_id: NEED_CONFIRM
+suite_mode: NEED_CONFIRM  # single_suite | multiple_suites | baselines
+api:
+  base_url: NEED_CONFIRM   # e.g. https://<org>.testrail.io
+  auth_method: NEED_CONFIRM  # api_key | password
+source_template:
+  file: null
+  exported_at: null
+  confirmation: null
+case_template:
+  mode: NEED_CONFIRM  # text | steps_separated
+  template_id: null
+custom_fields: []
+type_id_mapping: {}
+priority_id_mapping: {}
+mapping_from_canonical: {}
+trace_mapping:
+  target: null       # e.g. "refs"
+  sources: []
+sections:
+  strategy: NEED_CONFIRM  # e.g. one section per Jira US/feature
+run_and_results:
+  status_id_mapping: {}   # canonical PASS/FAIL/BLOCKED/etc -> TestRail status_id
+validation:
+  require_schema_from_live_instance: true
+  block_import_when_status_not_configured: true
+  dry_run_required: true
+  readback_required_after_import: true
+  target_project_verification: NEED_CONFIG
+  live_import_allowed: false
+notes:
+  - "Use this file only if the project's confirmed test_management.tool is TestRail — delete it
+     and keep qmetry-profile.yaml otherwise (or vice versa). No TestRail project/suite schema
+     confirmed yet. Do not invent case fields, type_id or priority_id mappings — pull them from
+     the live TestRail instance's get_case_fields/get_priorities/get_case_types API, or a current
+     exported reference, before using this file as an oracle."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI Output Testing"
+  short_description: "Test LLM-backed output: invariants, consistency, grounding"
+  default_prompt: "Use $40-ai-output-testing to test this AI-backed feature's output — declare the oracle class per check, fix the run context, and reconcile every claim against the authoritative layer."

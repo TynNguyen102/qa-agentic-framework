@@ -1,0 +1,29 @@
+levels:
+  L0:
+    name: Documentation
+    allowed: [local_files, attached_references]
+    data_mutation: false
+  L1:
+    name: Connected Read
+    allowed: [jira_read, confluence_read, api_read, logs_read]
+    data_mutation: false
+  L2:
+    name: Cross-layer Readback
+    allowed: [api_non_destructive, ui_read, db_select_allowlisted, audit_read]
+    data_mutation: false
+  L3:
+    name: Controlled Test Execution
+    allowed: [approved_test_env_mutation, fixture_create, automation_run]
+    data_mutation: true
+    approval_required: true
+  L4:
+    name: High-impact Validation
+    allowed: [performance, resilience, failover, destructive_test_data]
+    data_mutation: true
+    approval_required: true
+    dedicated_environment_required: true
+default_level: L0
+rules:
+  - "Use the lowest assurance level that can answer the test objective."
+  - "Never run write, load, failover, or destructive queries without explicit scope and approval."
+

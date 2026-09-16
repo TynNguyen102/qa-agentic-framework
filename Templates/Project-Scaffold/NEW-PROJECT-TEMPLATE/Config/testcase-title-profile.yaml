@@ -1,0 +1,9 @@
+status: NOT_CONFIRMED
+format: null
+selection_status: NOT_CONFIRMED
+allowed_tokens: []
+token_definitions: {}
+examples: []
+notes:
+  - "No title format confirmed yet for this project. Ask before generating final testcase titles
+     — do not invent a format from another project."

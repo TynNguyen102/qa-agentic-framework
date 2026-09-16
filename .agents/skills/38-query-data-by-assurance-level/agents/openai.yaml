@@ -1,0 +1,4 @@
+interface:
+  display_name: "Query Data by Assurance Level"
+  short_description: "Query and reconcile data using project assurance levels"
+  default_prompt: "Use $38-query-data-by-assurance-level for this QA task."

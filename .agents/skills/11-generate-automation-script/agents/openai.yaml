@@ -1,0 +1,4 @@
+interface:
+  display_name: "Generate Automation Script"
+  short_description: "Generate Robot Playwright API or k6 test code"
+  default_prompt: "Use $11-generate-automation-script for this QA task."

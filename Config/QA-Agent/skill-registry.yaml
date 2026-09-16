@@ -1,0 +1,94 @@
+schema_version: 1
+status: DRAFT
+updated_at: "2026-09-16"
+purpose: >
+  Đăng bạ phiên bản skill (gap P0 #10 — trước đây 0/51 skill có trường version).
+  Mục đích không phải đánh số cho đẹp, mà để trả lời được: "kết quả này sinh bởi skill phiên bản nào,
+  và từ đó tới nay skill có đổi không". Thiếu cái này thì không truy được vì sao một verdict cũ khác
+  verdict hôm nay.
+related:
+  - "Config/QA-Agent/schemas/skill-io.schema.yaml"
+  - "governance/LEARNING_FEEDBACK_POLICY.md (sửa skill phải qua MR + eval)"
+
+versioning_scheme:
+  format: "MAJOR.MINOR"
+  major: "Đổi hành vi hoặc contract — output cũ không còn tương thích. Cần cổng G6 + chạy lại eval liên quan."
+  minor: "Thêm mục, làm rõ câu chữ, sửa lỗi diễn đạt — không đổi contract."
+  rule: "Sửa một skill thì TĂNG version ở đây. Không tăng = coi như chưa sửa."
+  note: >
+    Cố ý đặt version ở MỘT file thay vì nhét frontmatter vào 51 SKILL.md: frontmatter của skill được
+    runtime đọc để routing, thêm trường lạ vào đó là rủi ro không cần thiết. Đây là backward-compatible.
+
+# ---------------------------------------------------------------------
+# Baseline 2026-09-16. Mọi skill có TRƯỚC phiên này đặt 1.0 (không truy ngược được lịch sử thật).
+# Ba skill mới tạo trong phiên này cũng là 1.0 nhưng ghi rõ created_at.
+# ---------------------------------------------------------------------
+baseline_note: >
+  41 skill đánh số + 7 support đã tồn tại trước 2026-09-16 được gán 1.0 làm mốc. Đây KHÔNG phải
+  tuyên bố rằng chúng chưa từng đổi — chỉ là mốc bắt đầu đếm. Lịch sử trước đó nằm ở git log.
+
+skills:
+  # --- Skill mới tạo 2026-09-16 (có eval case riêng, chưa chạy hết) ---
+  42-document-conflict-analysis: {version: "1.0", created_at: "2026-09-16", eval_cases: [CF-001, CF-002, CF-003], eval_status: "CF-001 PASS; CF-002/003 CHƯA CHẠY"}
+  43-risk-and-change-impact:     {version: "1.0", created_at: "2026-09-16", eval_cases: [RK-001, RK-002, RK-003, RK-004], eval_status: "RK-001/RK-003 PASS; RK-002/004 CHƯA CHẠY"}
+  44-test-advisor:               {version: "1.0", created_at: "2026-09-16", eval_cases: [TA-001, TA-002, TA-003], eval_status: "TA-002 PASS_WITH_CONCERN; TA-001/003 CHƯA CHẠY"}
+
+  # --- Skill sửa trong phiên 2026-09-16 ---
+  qa-router: {version: "1.1", changed_at: "2026-09-16", change: "Thêm mandatory pre-chain 01→42→43→44, mục artifacts-historically-forgotten, tham chiếu router-policy.yaml + HUMAN_APPROVAL_GATES.md", change_type: MINOR}
+
+  # --- Baseline 1.0, chưa đổi trong phiên này ---
+  01-review-requirements: {version: "1.0"}
+  02-sprint-test-plan: {version: "1.0"}
+  03-feature-test-plan: {version: "1.0"}
+  04-high-level-test-design: {version: "1.0"}
+  05-generate-test-specification: {version: "1.0"}
+  06-generate-functional-testcases: {version: "1.0"}
+  07-design-accessibility-testcases: {version: "1.0"}
+  08-generate-api-testcases: {version: "1.0"}
+  09-review-testcases: {version: "1.0"}
+  10-generate-test-data: {version: "1.0"}
+  11-generate-automation-script: {version: "1.0"}
+  12-setup-test-automation: {version: "1.0"}
+  13-execute-approved-testcases: {version: "1.0"}
+  14-professional-api-testing: {version: "1.0"}
+  15-functional-happy-path-testing: {version: "1.0"}
+  16-usability-testing: {version: "1.0"}
+  17-reliability-resilience-testing: {version: "1.0"}
+  18-exploratory-testing: {version: "1.0"}
+  19-execute-accessibility-testing: {version: "1.0"}
+  20-design-benchmark-testing: {version: "1.0"}
+  21-ui-ux-testing: {version: "1.0"}
+  22-contract-compatibility-testing: {version: "1.0"}
+  23-security-testing: {version: "1.0"}
+  24-test-coverage-audit: {version: "1.0"}
+  25-performance-testing: {version: "1.0"}
+  26-deep-coverage-testing: {version: "1.0"}
+  27-execute-benchmark-testing: {version: "1.0"}
+  28-frontend-e2e-testing: {version: "1.0"}
+  29-mobile-feature-testing: {version: "1.0"}
+  30-business-logic-bug-hunt: {version: "1.0"}
+  31-sanity-testing: {version: "1.0"}
+  32-smoke-regression-testing: {version: "1.0"}
+  33-test-reporting: {version: "1.0"}
+  34-database-testing: {version: "1.0"}
+  35-infrastructure-session-testing: {version: "1.0"}
+  36-log-jira-defect: {version: "1.0"}
+  37-retest-jira-defect: {version: "1.0"}
+  38-query-data-by-assurance-level: {version: "1.0"}
+  39-issue-triage: {version: "1.0"}
+  40-ai-output-testing: {version: "1.0"}
+  41-generated-file-testing: {version: "1.0"}
+  daily-check: {version: "1.0"}
+  end-of-day: {version: "1.0"}
+  jira-test-subtasks: {version: "1.0"}
+  master-test-plan: {version: "1.0"}
+  qmetry-testcase-import: {version: "1.0"}
+  testrail-testcase-import: {version: "1.0"}
+
+usage:
+  - "Output quan trọng (execution ledger, defect draft, coverage report) nên ghi skill_id + version đã dùng."
+  - "Khi một verdict cũ mâu thuẫn verdict mới, so version trước khi kết luận sản phẩm đã đổi."
+
+not_yet_done:
+  - "Chưa cưỡng chế: không có check tự động bắt 'sửa SKILL.md mà quên tăng version'."
+  - "Chưa gắn version vào output của skill (mới là quy ước, chưa có trường bắt buộc trong envelope)."

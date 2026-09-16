@@ -1,0 +1,26 @@
+# Khai bao project dang active. Skill, hook va tool doc file nay de resolve <ACTIVE_PROJECT>.
+#
+# Khung nay ship RONG co chu dich — chua co project nao. Them project dau tien bang cach:
+#   1. Copy  Templates/Project-Scaffold/NEW-PROJECT-TEMPLATE/  ->  Projects/<ten-project>/
+#   2. Dien  Projects/<ten-project>/qa-config.yaml  (Jira key, moi truong, repo)
+#   3. Bo comment khoi ben duoi va dien ten that
+#
+# Khi co nhieu hon mot project: giu tat ca trong `projects`, nhung `active_project` chi mot.
+# Neu nguoi dung goi ten mot project khac trong cau lenh thi uu tien cai ho goi.
+
+active_project: null
+
+projects: []
+
+# Vi du khi da co project that:
+#
+# active_project: My-Product
+# projects:
+#   - name: My-Product
+#     path: "Projects/My-Product/"
+#     status: ACTIVE
+
+rule: "Skills, hooks and tools resolve <ACTIVE_PROJECT> from active_project above unless the user
+  names a different project explicitly in the request. Add a new entry here (and a matching
+  Projects/<name>/ folder, copied from Templates/Project-Scaffold/) when a new project starts.
+  While active_project is null, no project-scoped work may claim PASS/FAIL — there is no oracle."

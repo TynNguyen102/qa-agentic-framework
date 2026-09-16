@@ -1,0 +1,71 @@
+schema_version: 1
+status: DRAFT
+updated_at: "2026-09-16"
+purpose: >
+  Contract input/output chung cho MỌI skill trong .agents/skills/. Mục đích là vendor-neutral:
+  một skill mô tả nó cần gì và trả ra gì, không phụ thuộc AI vendor hay runtime cụ thể.
+  Backward-compatible: skill hiện có vẫn chạy được mà không cần sửa — file này mô tả hình dạng
+  mà router/orchestrator kỳ vọng, và là bắt buộc cho skill MỚI (từ 42 trở đi).
+
+skill_declaration:
+  required_fields:
+    - id                       # "42-document-conflict-analysis"
+    - name
+    - description              # dùng cho routing — phải mô tả KHI NÀO dùng, không chỉ làm gì
+    - category                 # INTAKE|ANALYSIS|DESIGN|DATA|EXECUTION|VERIFICATION|REPORTING|SUPPORT
+    - inputs                   # list input_spec
+    - outputs                  # list output_spec
+    - preconditions            # điều kiện phải đạt trước khi chạy
+    - exit_criteria
+    - assurance_level_required # L0..L4
+    - human_gates              # list gate_id
+    - fallback                 # skill thay thế, hoặc "NONE — trả NEED_CONFIG"
+    - next_recommended         # list {condition, skill}
+    - prohibitions
+
+input_spec:
+  required_fields: [name, schema_ref, required, source]
+  schema_ref_examples:
+    - "Config/QA-Agent/schemas/requirement-intake.schema.yaml"
+    - "Config/QA-Agent/canonical-testcase-schema.yaml"
+    - "Config/QA-Agent/schemas/conflict-report.schema.yaml"
+  rule: "Skill chỉ được khai những input nó THỰC SỰ đọc — đây là cơ sở để orchestrator cắt context."
+
+output_spec:
+  required_fields: [name, schema_ref, evidence_state_required]
+  rule: "Mọi output phải mang evidence_state (CONFIRMED|INFERRED|ASSUMED|NOT_CHECKED)."
+
+universal_output_envelope:
+  description: "Mọi skill, dù trả gì, đều bọc trong envelope này để router xử lý đồng nhất."
+  required_fields:
+    - skill_id
+    - run_id
+    - status                   # DONE | DONE_WITH_CONCERNS | NEED_CONFIG | NEED_CONFIRM | BLOCKED
+    - evidence_state
+    - sources_used             # list rule_id / source_ref thực sự đã dùng
+    - open_conflicts           # list conflict_id
+    - assumptions
+    - residual_risk
+    - confidence_ref           # trỏ confidence-report.schema.yaml
+    - next_recommended
+    - human_gate_hit           # gate_id nếu bị chặn
+  rules:
+    - "status=DONE không được dùng khi còn conflict BLOCKER trong phạm vi output."
+    - "NEED_CONFIG dùng khi thiếu cấu hình thật (không bịa giá trị) — nêu đúng tên field còn thiếu."
+    - "sources_used rỗng ở một output có expected behavior là hard_fail."
+
+vendor_neutrality:
+  principle: "Core workflow không phụ thuộc một AI vendor hay một tool test cụ thể."
+  adapters:
+    model_adapter: "Runtime nào cũng được; nếu không hỗ trợ multi-agent -> chạy SEQUENTIAL (execution-plan.schema.yaml)."
+    tool_adapter: "Config/QA-Agent/tool-adapters.yaml (P1)"
+    jira_adapter: "MCP Atlassian hoặc REST — skill khai 'cần Jira write', không khai tên tool"
+    git_adapter: "GitLab REST hiện tại; GitHub qua cùng contract"
+    ci_adapter: ".gitlab-ci.yml / .github/workflows"
+    test_management_adapter: "qmetry-testcase-import | testrail-testcase-import theo qa-config.yaml"
+  rule: "Skill KHÔNG được hard-code tên tool trong logic nghiệp vụ; chỉ khai capability cần có."
+
+backward_compatibility:
+  - "41 skill hiện có KHÔNG bắt buộc migrate ngay — chúng vẫn hợp lệ."
+  - "Skill mới (42+) bắt buộc tuân thủ."
+  - "Khi sửa lớn một skill cũ, bổ sung declaration theo file này."

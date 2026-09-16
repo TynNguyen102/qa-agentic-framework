@@ -1,0 +1,27 @@
+schema_version: 1
+status: NOT_CONFIGURED
+purpose: "Cho AI và member dùng đúng repository/convention Robot khi được xác nhận cho project này."
+
+source:
+  local_path_config: "qa-config.local.yaml"
+  official_repo_url: NEED_CONFIRM
+  repository_role: NEED_CONFIRM
+
+project_mapping:
+  status: PROPOSED_NOT_CREATED
+  project_root: "Projects/NEW-PROJECT/"
+  story_folder_pattern: "Projects/NEW-PROJECT/<JIRA_KEY>/"
+  suite_file_pattern: "test_<jira_key_compact>_<feature_slug>_<type>.robot"
+  business_journey_pattern: "Projects/NEW-PROJECT/BusinessJourneys/<SPRINT_ID>/test_<journey_slug>.robot"
+  shared_keyword_root: "KeywordLibraries/NEW-PROJECT/"
+  shared_api_keyword_root: "KeywordLibraries/NEW-PROJECT-API/"
+  data_root: "DataTest/NEW-PROJECT/"
+  variable_pattern: "Variables/ENV_NEW-PROJECT_<ENV>.yaml"
+  rule: "Reuse framework architecture only. Never reuse another project's expected results, accounts, URLs, QMetry keys, Jira keys or domain rules as this project's truth."
+
+ci_observed:
+  provider: NEED_CONFIRM
+  ndp_pipeline_status: NOT_CONFIGURED
+
+risks_and_gaps:
+  - "No official repository confirmed yet for this project."

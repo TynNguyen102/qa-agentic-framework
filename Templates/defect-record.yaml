@@ -1,0 +1,87 @@
+schema_version: 1
+local_id: "FINDING-YYYYMMDD-NNN"
+project:
+  key: NEED_CONFIRM
+found_in_sprint: TBD
+fixed_in_sprint: null
+retested_in_sprints: []
+summary: "NEED_CONFIRM"
+lifecycle_status: DRAFT
+classification: NEED_CONFIRM
+
+source:
+  type: TEST_EXECUTION
+  reference: "NEED_CONFIRM"
+  observed_at: null
+
+fingerprint:
+  business_invariant: "NEED_CONFIRM"
+  rule_ids: []
+  component: "NEED_CONFIRM"
+  operation_or_journey: "NEED_CONFIRM"
+  symptom_signature: "NEED_CONFIRM"
+  preconditions: []
+  role: "NEED_CONFIRM"
+  tenant_scope: "NEED_CONFIRM"
+  data_profile: "NEED_CONFIRM"
+  environment: "NEED_CONFIRM"
+  detected_build: "NEED_CONFIRM"
+
+expected:
+  statement: "NEED_CONFIRM"
+  sources: []
+actual:
+  statement: "NEED_CONFIRM"
+  readback: []
+impact:
+  summary: "NEED_CONFIRM"
+  affected_scope: []
+  severity: null
+  priority: null
+
+duplicate_triage:
+  verdict: NOT_RUN
+  confidence: null
+  candidate_keys: []
+  searched_at: null
+  search_scope: []
+
+jira:
+  key: null
+  url: null
+  status: NOT_CREATED
+  workflow_status: null
+  snapshot_at: null
+
+traceability:
+  requirements: []
+  testcases: []
+  executions: []
+  evidence: []
+  automation: []
+
+retest:
+  fix_build: null
+  executed_at: null
+  verdict: NOT_RUN
+  evidence: []
+  residual_risk: "NEED_CONFIRM"
+
+regression:
+  required: true
+  impact_areas: []
+  testcase_ids: []
+  automation_paths: []
+  suite_tags: []
+  last_result: NOT_RUN
+  last_run_at: null
+  evidence: []
+
+ownership:
+  reporter_alias: null
+  qa_owner_alias: "NEED_CONFIRM"
+timestamps:
+  created_at: null
+  updated_at: null
+security:
+  redaction_status: PENDING

@@ -1,0 +1,47 @@
+$kind: http-request
+description: Authoritative live SIT contract. Inventory and documentation assertions intentionally expose contract gaps.
+url: "{{gateway_base_url}}/v3/api-docs"
+method: GET
+headers:
+  Accept: application/json
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('HTTP 200', function () { pm.response.to.have.status(200); });
+      pm.test('Response is JSON', function () { pm.response.to.be.json; });
+      const doc = pm.response.json();
+      pm.test('OpenAPI version is 3.1.x', function () { pm.expect(doc.openapi).to.match(/^3\.1\./); });
+      const methods = new Set(['get','post','put','patch','delete','head','options','trace']);
+      const operations = [];
+      Object.entries(doc.paths || {}).forEach(([path, pathItem]) => {
+        Object.entries(pathItem || {}).forEach(([method, operation]) => {
+          if (methods.has(method.toLowerCase())) operations.push({ path, method: method.toUpperCase(), operation });
+        });
+      });
+      pm.collectionVariables.set('live_operation_count', String(operations.length));
+      pm.collectionVariables.set('live_path_count', String(Object.keys(doc.paths || {}).length));
+      pm.test('Operation inventory is non-empty', function () { pm.expect(operations.length).to.be.above(0); });
+      const operationIds = operations.map(x => x.operation && x.operation.operationId).filter(Boolean);
+      pm.test('operationId values are unique', function () { pm.expect(new Set(operationIds).size).to.equal(operationIds.length); });
+      const securitySchemes = doc.components && doc.components.securitySchemes;
+      pm.test('Authentication scheme is documented', function () {
+        pm.expect(securitySchemes, 'components.securitySchemes is missing').to.be.an('object');
+        pm.expect(Object.keys(securitySchemes || {}).length, 'security scheme inventory is empty').to.be.above(0);
+      });
+      const missing401 = operations.filter(x => !(x.operation.responses && x.operation.responses['401'])).map(x => `${x.method} ${x.path}`);
+      pm.collectionVariables.set('operations_missing_401_count', String(missing401.length));
+      pm.test('Every operation documents runtime 401 behavior', function () { pm.expect(missing401, missing401.join(', ')).to.be.empty; });
+      function pointer(root, ref) {
+        return ref.slice(2).split('/').reduce((value, token) => value && value[token.replace(/~1/g, '/').replace(/~0/g, '~')], root);
+      }
+      const unresolved = [];
+      function walk(value) {
+        if (!value || typeof value !== 'object') return;
+        if (typeof value.$ref === 'string' && value.$ref.startsWith('#/') && pointer(doc, value.$ref) === undefined) unresolved.push(value.$ref);
+        Object.values(value).forEach(walk);
+      }
+      walk(doc);
+      pm.test('All local schema references resolve', function () { pm.expect([...new Set(unresolved)]).to.be.empty; });
+      console.log(JSON.stringify({ livePaths: Object.keys(doc.paths || {}).length, liveOperations: operations.length, schemas: Object.keys((doc.components && doc.components.schemas) || {}).length, missing401: missing401.length }));
+    language: text/javascript
+order: 1000

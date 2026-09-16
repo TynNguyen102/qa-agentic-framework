@@ -1,0 +1,3 @@
+$kind: collection
+description: Data-driven authentication-boundary checks for every live GET operation. Uses synthetic path values and never mutates SIT.
+order: 4000

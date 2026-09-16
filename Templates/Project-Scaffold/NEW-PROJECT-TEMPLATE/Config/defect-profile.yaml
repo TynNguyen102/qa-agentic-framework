@@ -1,0 +1,32 @@
+status: NOT_CONFIGURED
+language: NEED_CONFIRM
+issue_type: Bug
+title_format: null
+title_status: NOT_CONFIRMED
+description_sections: []
+missing_value_policy: "Dùng CHƯA CÓ hoặc NEED_CONFIRM kèm lý do; không để heading rỗng và không bịa dữ liệu."
+jira_live_body:
+  status: NOT_CONFIGURED
+mandatory_fields: []
+observed_reference_fields:
+  project: NEED_CONFIRM
+  issue_type: Bug
+severity_mapping:
+  status: NOT_CONFIGURED
+priority_mapping:
+  status: NOT_CONFIGURED
+labels: []
+duplicate_search_policy: "Tìm theo business invariant, component, triệu chứng người dùng, API operation, error signature và build trước khi tạo."
+security_redaction:
+  prohibited:
+    - plaintext_password
+    - bearer_or_refresh_token
+    - session_cookie
+    - api_key
+    - private_key
+    - full_sensitive_curl
+    - unnecessary_personal_data
+  rule: "Thay secret bằng placeholder và chỉ đính kèm bằng chứng chẩn đoán tối thiểu đã làm sạch."
+rules:
+  - "Chưa có title_format/severity/priority mapping đã CONFIRMED — trả NEED_CONFIG khi cần trước khi log live."
+  - "Mặc định tạo bản nháp; log live cần anh phê duyệt rõ ràng."

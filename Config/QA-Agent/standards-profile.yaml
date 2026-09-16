@@ -1,0 +1,80 @@
+status: CONFIRMED
+updated_at: "2026-07-19"
+confirmed_by: tuyen
+confirmed_at: "2026-07-19"
+principle: "Use standards as risk and evidence frameworks; project requirements remain the source of product expected behavior."
+proposal_note: >
+  Anh (QA lead) confirmed all editions/versions below on 2026-07-19, in the context of a project
+  that no longer exists in this workspace — re-confirm these editions apply to whichever project is
+  active now before treating them as decided. Still verify against the standards body's current
+  publication before relying on this for a normative pass/fail decision, since security/accessibility
+  standards revise more often than this file is reviewed — re-confirm at next major review, not never.
+standards:
+  test_process:
+    - name: ISO/IEC/IEEE 29119
+      edition: "Parts 1-3, ~2021-2022 revision"
+      confirmation: CONFIRMED
+      use_for: [test_process, test_documentation, test_design]
+    - name: ISTQB
+      syllabus_or_version: "CTFL v4.0 (2023 syllabus)"
+      confirmation: CONFIRMED
+      use_for: [terminology, techniques, risk_based_testing, review]
+  quality_model:
+    - name: ISO/IEC 25010
+      edition: "ISO/IEC 25010:2023"
+      confirmation: CONFIRMED
+      use_for: [functional_suitability, performance_efficiency, compatibility, usability, reliability, security, maintainability, portability]
+    - name: ISO/IEC 25012
+      edition: "ISO/IEC 25012:2008 (verify whether a newer edition has since published)"
+      confirmation: CONFIRMED
+      use_for: [data_quality]
+  ai_testing:
+    # BỔ SUNG 2026-09-07 (QA Lead): Example là sản phẩm AI -> output không deterministic, cần khung test riêng.
+    # THỰC HÀNH đã có trong skill 40-ai-output-testing (oracle INVARIANT/DISTRIBUTIONAL/GROUNDED) + 20-design-benchmark-testing.
+    # Đánh dấu PROPOSED: cần Lead chốt edition trước khi dùng ngôn ngữ pass/fail chuẩn tắc.
+    - name: ISO/IEC/IEEE 29119-11
+      edition: "29119-11:2020 — Guidelines on the testing of AI-based systems"
+      confirmation: PROPOSED_2026-09-07
+      use_for: [ai_system_testing, test_oracle_problem, non_deterministic_output, ml_test_approach]
+      implemented_in: "skill 40-ai-output-testing (INVARIANT/DISTRIBUTIONAL/GROUNDED, variance theo N, grounding reconciliation, model/prompt regression)"
+    - name: ISO/IEC 25059
+      edition: "25059:2023 — Quality model for AI systems (mở rộng 25010)"
+      confirmation: PROPOSED_2026-09-07
+      use_for: [ai_quality_characteristics, functional_correctness_ai, robustness]
+    - name: ISTQB CT-AI
+      syllabus_or_version: "Certified Tester AI Testing v1.0 (2021)"
+      confirmation: PROPOSED_2026-09-07
+      use_for: [ml_functional_performance_metrics, test_oracle_problem, metamorphic_testing, data_quality_for_ml]
+      implemented_in: "skill 40 + skill 20 (benchmark precision/recall vs ground-truth)"
+  accessibility:
+    - name: WCAG
+      version_and_level: "WCAG 2.2, Level AA"
+      confirmation: CONFIRMED
+      use_for: [web_accessibility]
+  security:
+    - name: OWASP ASVS
+      version_and_level: "ASVS 5.0.0, Level 2 candidate (current stable as checked 2026-07-19; QA/security owner must approve the level and scoped requirements for the active project)"
+      confirmation: CONFIRMED
+      use_for: [web_application_security]
+    - name: OWASP API Security Top 10
+      version: "2023 edition"
+      confirmation: CONFIRMED
+      use_for: [api_security]
+    - name: OWASP Web Security Testing Guide
+      version_and_level: "v4.2 stable; latest API-testing material may be used only as candidate guidance until a versioned baseline is approved for the active project"
+      confirmation: CONFIRMED
+      use_for: [web_security_testing, api_reconnaissance, authentication, authorization, session, input_validation]
+    - name: OWASP MASVS
+      version_and_level: "MASVS 2.x, Level 1 (raise to L2 if handling sensitive data); only relevant if the active project has a native mobile app — unconfirmed"
+      confirmation: CONFIRMED
+      use_for: [mobile_security]
+  contracts:
+    - name: OpenAPI Specification
+      version: FROM_LIVE_SPEC
+      confirmation: CONFIRMED
+      use_for: [api_contract]
+rules:
+  - "Do not claim certification or conformance unless the approved scope, version, method, and evidence support it."
+  - "Record the exact approved edition/version before using normative pass/fail language."
+  - "A standard does not replace Jira, Confluence, domain rules, or approved design as the product oracle."
+  - "All entries above were CONFIRMED by anh (QA lead) as of 2026-07-19 for a project that no longer exists in this workspace; re-confirm for the active project before treating this as decided, and re-verify edition currency at the next standards review rather than treating this as permanent."

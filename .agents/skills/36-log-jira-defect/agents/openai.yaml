@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ghi nhận defect Jira"
+  short_description: "Soạn và tạo defect bằng tiếng Việt"
+  default_prompt: "Dùng $36-log-jira-defect để soạn defect bằng tiếng Việt từ bằng chứng này."

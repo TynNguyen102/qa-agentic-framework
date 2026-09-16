@@ -1,0 +1,158 @@
+schema_version: 1
+status: DRAFT            # DRAFT tới khi Lead review; qa-router/SKILL.md vẫn là nguồn hành vi hiện hành
+updated_at: "2026-09-16"
+purpose: >
+  Chính sách định tuyến máy đọc được cho qa-router. Tách phần "quyết định thế nào" ra khỏi
+  .agents/skills/qa-router/SKILL.md (vẫn giữ nguyên, là phần mô tả cho agent đọc).
+  File này KHÔNG thay thế SKILL.md — nó làm rõ các luật mà SKILL.md đang diễn đạt bằng văn xuôi,
+  và bổ sung phần còn thiếu: tín hiệu định tuyến, fan-out, song song, next-skill.
+supersedes: none
+related:
+  - ".agents/skills/qa-router/SKILL.md"
+  - "Config/QA-Agent/schemas/execution-plan.schema.yaml"
+  - "governance/HUMAN_APPROVAL_GATES.md"
+
+# =====================================================================
+# 1. TÍN HIỆU ĐỊNH TUYẾN — router KHÔNG được chỉ dựa vào keyword
+# =====================================================================
+routing_signals:
+  weight_note: "Trọng số là hướng dẫn ưu tiên, không phải công thức chấm điểm tự động."
+  signals:
+    - {name: ticket_type,        source: "Jira issuetype + intake_type", weight: high}
+    - {name: domain_module,      source: "Projects/<P>/Config/modules.yaml", weight: high}
+    - {name: risk_level,         source: "43-risk-and-change-impact", weight: high}
+    - {name: impacted_components, source: "43 impact map", weight: high}
+    - {name: technology_layer,   source: "FE/BE/DB/event/AI — từ intake + impact map", weight: high}
+    - {name: available_documents, source: "requirement-intake source_refs", weight: medium}
+    - {name: environment,        source: "Projects/<P>/qa-config.yaml environments", weight: medium}
+    - {name: test_phase,         source: "sprint state / build state", weight: medium}
+    - {name: required_outputs,   source: "yêu cầu người dùng", weight: high}
+    - {name: time_budget,        source: "người dùng hoặc due date US", weight: low}
+    - {name: token_budget,       source: "TOKEN_COST_OPTIMIZATION.md", weight: low}
+    - {name: user_selected_test_types, source: "44-test-advisor", weight: high}
+    - {name: previous_defects,   source: "Projects/<P>/Defects/INDEX.md", weight: high}
+    - {name: change_impact,      source: "GitLab MR/diff", weight: high}
+  anti_pattern:
+    - "Chọn skill chỉ vì prompt chứa một từ khoá (vd thấy chữ 'API' là route 08)."
+    - "Bỏ qua Defects/INDEX.md khi module đã có finding cũ (luật recall của skill 01)."
+    - "Suy ra risk từ cảm tính thay vì chạy 43."
+
+# =====================================================================
+# 2. CHUỖI BẮT BUỘC TRƯỚC KHI DESIGN — P0 gate
+# =====================================================================
+mandatory_prechain:
+  description: "Với mọi yêu cầu bắt đầu từ một US/ticket/CR mới, ba bước này chạy TRƯỚC test design."
+  sequence:
+    - {step: 1, skill: "01-review-requirements", output: "requirement-intake.schema.yaml"}
+    - {step: 2, skill: "42-document-conflict-analysis", output: "conflict-report.schema.yaml"}
+    - {step: 3, skill: "43-risk-and-change-impact", output: "risk + impact map"}
+    - {step: 4, skill: "44-test-advisor", output: "checklist test types đã được người dùng xác nhận"}
+  skip_conditions:
+    - "Retest một defect đã có (37) — không cần 44, nhưng vẫn cần 42 nếu fix đụng rule."
+    - "Sanity/smoke sau build (31/32) — dùng lại risk gần nhất nếu impact không đổi."
+  hard_rule: "Không route sang 05/06/07/08 khi bước 2 còn conflict BLOCKER chưa DECIDED."
+
+# =====================================================================
+# 3. NEXT-SKILL RECOMMENDATION (brief §IX)
+# =====================================================================
+next_skill_rules:
+  - {after: "01-review-requirements", condition: "luôn",                       next: "42-document-conflict-analysis"}
+  - {after: "42-document-conflict-analysis", condition: "có conflict BLOCKER", next: "HUMAN_GATE: conflict-resolution"}
+  - {after: "42-document-conflict-analysis", condition: "không có BLOCKER",    next: "43-risk-and-change-impact"}
+  - {after: "43-risk-and-change-impact", condition: "luôn",                    next: "44-test-advisor"}
+  - {after: "44-test-advisor", condition: "người dùng đã chọn scope",          next: "04-high-level-test-design"}
+  - {after: "04-high-level-test-design", condition: "functional",              next: "06-generate-functional-testcases"}
+  - {after: "04-high-level-test-design", condition: "có API/event",            next: "08-generate-api-testcases"}
+  - {after: "06|08", condition: "luôn",                                        next: "09-review-testcases"}
+  - {after: "09-review-testcases", condition: "pass review",                   next: "24-test-coverage-audit"}
+  - {after: "24-test-coverage-audit", condition: "coverage đạt",               next: "10-generate-test-data"}
+  - {after: "10-generate-test-data", condition: "luôn",                        next: "13-execute-approved-testcases"}
+  - {after: "13-execute-approved-testcases", condition: "có FAIL",             next: "39-issue-triage"}
+  - {after: "39-issue-triage", condition: "CONFIRMED_DEFECT + đủ confidence",  next: "36-log-jira-defect"}
+  - {after: "39-issue-triage", condition: "confidence thấp",                   next: "HUMAN_GATE: low-confidence-defect"}
+  - {after: "13-execute-approved-testcases", condition: "PASS ổn định, lặp lại được", next: "11-generate-automation-script"}
+  - {after: "11-generate-automation-script", condition: "dry-run pass",        next: "32-smoke-regression-testing"}
+  - {after: "32-smoke-regression-testing", condition: "ổn định qua nhiều build", next: "CI_CANDIDATE"}
+  - {after: "bất kỳ execution skill", condition: "kết thúc đợt",               next: "33-test-reporting"}
+  hard_rule: "Không chạy skill kế tiếp khi precondition của nó chưa đạt — ghi BLOCKED thay vì chạy cho có."
+
+# =====================================================================
+# 4. FAN-OUT / SONG SONG
+# =====================================================================
+fanout_rules:
+  default: SEQUENTIAL
+  allow_parallel_when:
+    - "risk_level in [HIGH, VERY_HIGH]"
+    - "Các dimension test độc lập (vd API contract vs UI responsive vs DB reconciliation)"
+    - "Build đã qua smoke/sanity"
+    - "Runtime thực sự hỗ trợ multi-agent"
+  never_parallel:
+    - "assurance_level L3/L4 (mutation, destructive, performance, failover)"
+    - "Còn conflict BLOCKER mở"
+    - "Cùng ghi vào một tập test data/môi trường dùng chung"
+  max_parallel_default: 3
+  fallback: "Runtime không hỗ trợ multi-agent -> SEQUENTIAL, ghi lý do vào execution-plan.mode_reason."
+
+deep_test_scheduling:
+  run_after_baseline_when:
+    - "Requirement chưa ổn định (còn NEED_CONFIRM ảnh hưởng expected)"
+    - "Build chưa đủ ổn (smoke chưa pass)"
+    - "Deep test phụ thuộc test data hoặc environment chưa sẵn sàng"
+  run_parallel_when:
+    - "Phạm vi độc lập với baseline"
+    - "Build đủ ổn định"
+    - "Có đủ resource và không làm tăng rủi ro môi trường"
+    - "Bug hunt nhắm vùng risk KHÁC vùng baseline đang chạy"
+
+# =====================================================================
+# 5. GATE BẮT BUỘC (tổng hợp — chi tiết ở governance/HUMAN_APPROVAL_GATES.md)
+# =====================================================================
+mandatory_gates_ref: "governance/HUMAN_APPROVAL_GATES.md"
+gate_summary:
+  - {id: G1, name: conflict-resolution,       blocks: "test design + mọi verdict trong vùng ảnh hưởng"}
+  - {id: G2, name: residual-risk-acceptance,  blocks: "đóng sprint/feature với risk chưa test"}
+  - {id: G3, name: destructive-test,          blocks: "security/performance/failover L3-L4"}
+  - {id: G4, name: sensitive-data-use,        blocks: "dùng dữ liệu thật/PII"}
+  - {id: G5, name: low-confidence-defect,     blocks: "log Jira khi confidence LOW"}
+  - {id: G6, name: core-skill-policy-change,  blocks: "sửa Core skill/policy/schema"}
+  - {id: G7, name: release-gate-inclusion,    blocks: "đưa test vào release gate"}
+  - {id: G8, name: business-rule-override,    blocks: "ghi đè business/domain rule"}
+  - {id: G9, name: live-write,                blocks: "mọi ghi live Jira/QMetry/Confluence/Git/env/data"}
+
+# =====================================================================
+# 6. FILE PHẢI ĐỌC MÀ ROUTER HIỆN ĐANG BỎ SÓT (gap #3 trong GAP_ANALYSIS)
+# =====================================================================
+underlinked_artifacts:
+  note: "Đã tồn tại và đang hoạt động, nhưng qa-router/SKILL.md chưa nhắc tên — router PHẢI đọc khi liên quan."
+  files:
+    - {path: "Projects/<ACTIVE_PROJECT>/Config/bug-basis-profile.yaml", when: "mọi luồng defect/bug hunt"}
+    - {path: "Config/QA-Agent/assurance-levels.yaml", when: "mọi luồng chạm data/môi trường"}
+    - {path: "Config/QA-Agent/ui-pattern-checklists/", when: "UI/UX"}
+    - {path: "evals/qa-agent/eval-suite.yaml", when: "sau khi sửa router/config lớn"}
+    - {path: ".claude/hooks/pre_jira_write_gate.py", when: "trước khi raise bug — hook cưỡng chế 6 cổng"}
+
+# =====================================================================
+# 7. SMOKE / REGRESSION SELECTION (brief §XXIV)
+# =====================================================================
+suite_classification:
+  smoke_criteria:
+    all_required: [critical_business_flow, fast, stable, low_dependency, clear_assertion, multi_environment_capable]
+  regression_criteria:
+    any_of: [high_risk, frequently_changed, historical_defect, critical_integration, permission_or_security, data_integrity]
+    all_required: [repeatable]
+  labels: [MANUAL_ONLY, AUTOMATION_CANDIDATE, AUTOMATED, SMOKE_CANDIDATE, REGRESSION_CANDIDATE, RELEASE_GATE_CANDIDATE, QUARANTINED_FLAKY, DEPRECATED]
+  rules:
+    - "QUARANTINED_FLAKY phải có ngày hết hạn và chủ sở hữu — không được quarantine vô thời hạn."
+    - "RELEASE_GATE_CANDIDATE cần gate G7."
+    - "Test FAIL trong CI KHÔNG tự động thành product bug — phải qua 39-issue-triage."
+
+# =====================================================================
+# 8. ĐIỀU ROUTER KHÔNG ĐƯỢC LÀM
+# =====================================================================
+prohibitions:
+  - "Không tự nâng competency/knowledge state/execution readiness."
+  - "Không claim execution khi runtime chưa có tool tương ứng."
+  - "Không dùng rule/data/env của project khác làm expected cho project đang active."
+  - "Không bỏ qua mandatory_prechain để 'chạy cho nhanh'."
+  - "Không tuyên bố coverage 100%/zero-bug — luôn kèm denominator + residual risk."
+  - "Không fan-out nhiều agent khi risk thấp (lãng phí token, tăng rủi ro merge sai)."

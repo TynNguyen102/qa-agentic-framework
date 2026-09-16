@@ -1,0 +1,3 @@
+$kind: collection
+description: Safe authenticated GET checks. Runner requires INGESTION_SIT_ACCESS_TOKEN and INGESTION_SIT_TENANT_ID and never writes them to committed files.
+order: 3000

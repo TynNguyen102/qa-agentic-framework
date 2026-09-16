@@ -1,0 +1,4 @@
+interface:
+  display_name: "Exploratory Testing"
+  short_description: "Run charter-based exploratory testing"
+  default_prompt: "Use $18-exploratory-testing for this QA task."

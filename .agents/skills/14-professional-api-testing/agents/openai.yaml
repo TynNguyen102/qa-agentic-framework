@@ -1,0 +1,4 @@
+interface:
+  display_name: "Professional API Testing"
+  short_description: "Execute comprehensive API and business tests"
+  default_prompt: "Use $14-professional-api-testing for this QA task."

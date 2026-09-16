@@ -1,0 +1,4 @@
+interface:
+  display_name: "Generate Test Specification"
+  short_description: "Turn test design into executable test scenarios"
+  default_prompt: "Use $05-generate-test-specification for this QA task."

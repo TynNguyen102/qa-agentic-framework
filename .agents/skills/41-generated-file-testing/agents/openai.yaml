@@ -1,0 +1,4 @@
+interface:
+  display_name: "Generated File Testing"
+  short_description: "Test exports and generated files end to end"
+  default_prompt: "Use $41-generated-file-testing to test this export or generated file — byte level, real consuming application, content reconciliation, formula injection and export authorization."

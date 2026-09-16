@@ -1,0 +1,35 @@
+status: NOT_CONFIGURED
+product_variant: null
+project_key: NEED_CONFIRM
+source_template:
+  file: null
+  exported_at: null
+  qmetry_version: null
+  confirmation: null
+import:
+  format: null
+  sheet_name: null
+  destination_folder: null
+  duplicate_policy: null
+  maximum_rows: null
+columns:
+  count: 0
+  ordered: []
+  mandatory: []
+  step_fields: []
+  custom_fields: []
+mapping_from_canonical: {}
+trace_mapping:
+  target: null
+  sources: []
+validation:
+  require_template_from_live_instance: true
+  block_import_when_status_not_configured: true
+  dry_run_required: true
+  readback_required_after_import: true
+  target_project_verification: NEED_CONFIG
+  live_import_allowed: false
+notes:
+  - "Use this file only if the project's confirmed test_management.tool is QMetry — delete it and
+     keep testrail-profile.yaml otherwise (or vice versa). No export/import template obtained yet
+     for this project; do not invent a column layout."

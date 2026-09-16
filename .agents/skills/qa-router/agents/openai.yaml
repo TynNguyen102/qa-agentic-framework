@@ -1,0 +1,4 @@
+interface:
+  display_name: "QA Router"
+  short_description: "Route requests to the correct QA skill"
+  default_prompt: "Use $qa-router for this QA task."

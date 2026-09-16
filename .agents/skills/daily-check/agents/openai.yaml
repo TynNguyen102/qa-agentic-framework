@@ -1,0 +1,4 @@
+interface:
+  display_name: "Daily Check"
+  short_description: "Start-of-day Jira/Confluence check, diffed against yesterday"
+  default_prompt: "Use $daily-check to run today's daily check and diff against the prior snapshot."

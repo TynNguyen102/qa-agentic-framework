@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review Testcases"
+  short_description: "Review testcase quality coverage and traceability"
+  default_prompt: "Use $09-review-testcases for this QA task."

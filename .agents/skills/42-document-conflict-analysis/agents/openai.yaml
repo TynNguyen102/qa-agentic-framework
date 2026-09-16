@@ -1,0 +1,4 @@
+interface:
+  display_name: "Document Conflict Analysis"
+  short_description: "Detect conflicts and relationships between requirement sources"
+  default_prompt: "Use $42-document-conflict-analysis for this QA task."

@@ -1,0 +1,85 @@
+schema_version: 1
+status: DRAFT
+updated_at: "2026-09-16"
+purpose: >
+  Hình dạng bắt buộc của Execution Plan mà qa-router sinh ra trước khi chạy bất kỳ skill nào.
+  Đây là contract cho cả chế độ sequential (mặc định) lẫn multi-agent. Nếu runtime không hỗ trợ
+  multi-agent, plan vẫn hợp lệ — chỉ chạy tuần tự theo dependency.
+produced_by: "qa-router"
+policy: "Config/QA-Agent/router-policy.yaml"
+
+plan:
+  required_fields:
+    - plan_id                  # PLAN-YYYYMMDD-NNN
+    - created_at
+    - intake_ref               # intake_id từ requirement-intake.schema.yaml
+    - active_project
+    - execution_mode           # SEQUENTIAL | PARALLEL_LIMITED | HYBRID
+    - mode_reason              # vì sao chọn mode đó (runtime hỗ trợ? risk đủ cao?)
+    - risk_ref                 # risk_id từ 43-risk-and-change-impact (hoặc NEED_CONFIRM)
+    - selected_test_types      # từ 44-test-advisor, đã có xác nhận của người dùng
+    - steps                    # list step (dưới)
+    - shared_context           # xem shared_context bên dưới
+    - human_gates              # list gate_id từ HUMAN_APPROVAL_GATES.md sẽ gặp
+    - exit_criteria            # điều kiện coi plan là xong
+    - budget                   # {max_steps, max_parallel, token_budget_hint, time_budget_hint}
+    - fallback_plan            # làm gì khi một step FAIL/BLOCKED
+
+step:
+  required_fields:
+    - step_id
+    - skill                    # id skill, vd "08-generate-api-testcases"
+    - why_selected             # lý do có dẫn nguồn (risk/component/intake), KHÔNG được chỉ là keyword
+    - inputs                   # chỉ những field step này thực sự cần (xem context_minimization)
+    - expected_outputs         # schema nào sẽ được sinh ra
+    - depends_on               # list step_id
+    - parallel_group           # null nếu tuần tự
+    - start_condition          # điều kiện tiên quyết phải đạt
+    - exit_condition
+    - human_approval_gate      # gate_id hoặc null
+    - fallback_skill           # skill thay thế khi step này không chạy được
+    - next_recommended         # skill gợi ý sau khi step này xong (brief §IX)
+    - status                   # PLANNED|RUNNING|DONE|FAILED|BLOCKED|SKIPPED
+    - evidence_state
+
+shared_context:
+  purpose: "Một bản context chuẩn hoá dùng chung, thay cho việc nhét nguyên tài liệu vào mọi step."
+  required_fields:
+    - intake_summary           # bản rút gọn, không phải nguyên văn tài liệu
+    - approved_rules_index     # list {rule_id, module, one_line} — KHÔNG phải full text
+    - open_conflicts           # list conflict_id + blocking
+    - environment              # tên env + giới hạn theo assurance-levels.yaml
+    - assurance_level          # L0..L4
+    - glossary_subset
+  context_minimization:
+    - "Mỗi step chỉ nhận field nó khai trong inputs. Không truyền toàn bộ shared_context cho mọi step."
+    - "Rule đầy đủ chỉ được nạp khi step thực sự cần làm oracle, nạp theo rule_id."
+    - "Tài liệu đã parse phải cache và tham chiếu, không dán lại."
+
+parallelization:
+  allowed_when:
+    - "Các step không dùng chung state môi trường có thể bị ghi đè"
+    - "Build đã đủ ổn định (smoke/sanity đã PASS) khi step là deep test/bug hunt"
+    - "Không vượt budget.max_parallel"
+  forbidden_when:
+    - "Step yêu cầu assurance level L3/L4 (mutation/destructive) — luôn tuần tự, luôn có gate"
+    - "Có conflict BLOCKER chưa DECIDED trong affected_components"
+    - "Runtime không hỗ trợ multi-agent — hạ về SEQUENTIAL, ghi vào mode_reason"
+
+merge_rules:
+  - "Output nhiều step merge theo schema chuẩn của loại output đó (testcase/test-result/conflict)."
+  - "Phát hiện testcase trùng theo (requirement_id + điều kiện test + data class), không chỉ theo title."
+  - "Hai step kết luận trái nhau về cùng một đối tượng => sinh conflict record, KHÔNG tự chọn bên nào."
+  - "Review Agent (09-review-testcases hoặc 24-test-coverage-audit) chạy sau cùng trên output đã merge."
+
+prohibitions:
+  - "Không tạo plan có step claim execution khi runtime chưa có tool tương ứng (eval ZT-004)."
+  - "Không bỏ human_gates khỏi plan để chạy nhanh hơn."
+  - "Không fan-out nhiều agent khi risk thấp — xem router-policy.yaml mục fanout_rules."
+
+validation:
+  hard_fail:
+    - "step có parallel_group nhưng assurance_level là L3/L4"
+    - "step thiếu why_selected hoặc why_selected chỉ là keyword khớp"
+    - "plan có step ghi Jira/QMetry/Confluence live mà không có human_approval_gate"
+    - "execution_mode != SEQUENTIAL nhưng runtime không hỗ trợ multi-agent"

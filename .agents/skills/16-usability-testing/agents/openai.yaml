@@ -1,0 +1,4 @@
+interface:
+  display_name: "Usability Testing"
+  short_description: "Evaluate usability efficiency and error recovery"
+  default_prompt: "Use $16-usability-testing for this QA task."

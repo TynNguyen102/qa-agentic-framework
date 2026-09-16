@@ -1,0 +1,173 @@
+schema_version: 1
+status: ACTIVE_DESIGN_BASELINE
+updated_at: "2026-07-19"
+purpose: >
+  API-specific coverage denominator and specialist checklist used by workflows
+  08, 14, 22, 23, 24, 25, 26, 34, 35 and 38. It is protocol-aware and requires
+  business/readback evidence beyond transport success.
+
+scope_discovery:
+  protocol_values: [REST_HTTP, SOAP, GRAPHQL, GRPC, WEBSOCKET, SSE, ASYNC_EVENT, OTHER]
+  required_sources:
+    - live_contract_or_authoritative_schema
+    - requirement_and_business_rules
+    - gateway_or_runtime_route_inventory_when_authorized
+    - consumer_and_dependency_inventory
+  rules:
+    - "Identify protocol before applying an OpenAPI-specific checklist."
+    - "Reconcile documented operations with authorized runtime/gateway/frontend/log evidence; classify undocumented, deprecated and old-version operations."
+    - "Record contract version, retrieval timestamp, server/base path and environment."
+    - "Mark unsupported protocol coverage NEED_CONFIRM; do not force REST expectations onto another protocol."
+
+operation_unit:
+  id_pattern: "API-COV-<SERVICE>-<OPERATION>-<NNN>"
+  required_fields:
+    - service
+    - protocol
+    - operation_or_message
+    - contract_source_and_version
+    - business_source_ids
+    - security_scheme
+    - roles_and_tenants
+    - pre_state_and_post_state
+    - input_partitions
+    - side_effects_and_dependencies
+    - readback_oracles
+    - cleanup
+    - risk
+    - applicability
+    - status
+
+openapi_http_contract:
+  version_policy:
+    - "Use semantics of the version declared by the live OpenAPI document; do not silently reinterpret 3.0 keywords as 3.1/3.2 JSON Schema semantics."
+    - "Resolve the declared JSON Schema dialect, external references and reference cycles supported by the selected tooling."
+  inventory:
+    - method_path_operation_id_and_servers
+    - path_query_header_cookie_and_body_parameters
+    - content_types_request_response_headers_and_links
+    - security_requirements_scopes_and_overrides
+    - callbacks_webhooks_and_async_completion
+    - success_error_and_default_responses
+  schema_and_serialization:
+    - required_optional_nullable_and_default
+    - types_formats_enums_const_and_patterns
+    - minimum_maximum_multiple_of_length_and_collection_bounds
+    - unique_items_contains_and_property_count
+    - all_of_one_of_any_of_not_and_discriminator
+    - additional_and_unevaluated_properties
+    - conditional_and_dependent_schemas
+    - read_only_write_only_deprecated_and_examples_as_non_oracles
+    - style_explode_deep_object_allow_reserved_and_encoding
+    - multipart_binary_streaming_and_content_encoding
+    - etag_if_match_if_none_match_range_and_cache_semantics_when_present
+
+functional_and_business:
+  - valid_and_alternate_outcomes
+  - missing_null_empty_wrong_type_malformed_and_unexpected_input
+  - min_minus_one_min_min_plus_one_max_minus_one_max_max_plus_one_when_safe
+  - conditional_cross_field_and_business_decision_rules
+  - valid_invalid_and_terminal_state_transitions
+  - duplicate_idempotency_retry_timeout_and_replay
+  - ordering_concurrency_race_and_optimistic_locking
+  - pagination_filter_sort_search_locale_time_zone_and_numeric_precision
+  - persistence_event_audit_cache_and_downstream_readback
+  - rollback_compensation_cleanup_and_no_orphan_effects
+
+identity_and_access:
+  - missing_invalid_expired_revoked_and_wrong_audience_credentials
+  - oauth_oidc_scopes_claims_jwks_rotation_and_mtls_when_applicable
+  - object_function_and_property_level_authorization
+  - cross_role_cross_tenant_cross_owner_and_guessed_identifier
+  - field_overposting_mass_assignment_and_excessive_data_exposure
+  - session_refresh_logout_revocation_replay_and_clock_skew
+
+owasp_api_security_2023:
+  API1: broken_object_level_authorization
+  API2: broken_authentication
+  API3: broken_object_property_level_authorization
+  API4: unrestricted_resource_consumption
+  API5: broken_function_level_authorization
+  API6: unrestricted_access_to_sensitive_business_flows
+  API7: server_side_request_forgery
+  API8: security_misconfiguration
+  API9: improper_inventory_management
+  API10: unsafe_consumption_of_apis
+  rules:
+    - "Map each applicable risk per operation to a testcase/authorized security scenario or N/A_WITH_REASON."
+    - "API6 requires abuse-volume, automation and workflow-circumvention analysis, not only role checks."
+    - "API9 requires runtime/documentation/version inventory reconciliation when authorized."
+    - "API10 requires TLS, redirect, timeout, response-size and validation/sanitization checks for upstream data."
+    - "OWASP Top 10 is a risk baseline, not an exhaustive security test suite."
+
+protocol_extensions:
+  SOAP:
+    checks: [wsdl_xsd, soap_faults, xml_namespaces, xxe_and_xml_security, ws_security]
+  GRAPHQL:
+    checks: [schema_and_introspection, query_mutation_subscription, field_authorization, aliases_batching_depth_complexity, error_and_null_propagation]
+  GRPC:
+    checks: [protobuf_contract, metadata_and_auth, unary_client_server_bidirectional_streams, deadlines_cancellation_status_and_retry]
+  WEBSOCKET:
+    checks: [handshake_origin_auth, message_schema_and_authorization, ordering_duplicates_reconnect_backpressure_and_close]
+  SSE:
+    checks: [authentication, event_id_order_reconnect_retry_and_duplicate_delivery]
+  ASYNC_EVENT:
+    checks: [message_schema_headers_keys_partitions_order_duplicates_loss_dlq_replay_and_compatibility]
+
+resilience_compatibility_and_operations:
+  - downstream_timeout_error_partial_success_and_malformed_response
+  - retry_backoff_circuit_breaker_and_recovery
+  - version_deprecation_backward_forward_and_mixed_deployment
+  - rate_limit_quota_resource_exhaustion_and_payload_amplification
+  - logs_metrics_traces_alerts_request_id_and_audit
+  - secret_pii_stack_trace_internal_id_and_debug_exposure
+  - performance_correctness_under_load_and_capacity_thresholds
+
+generation_strategy:
+  - "Generate one-invalid-dimension cases for diagnosis, then selected pairwise and risk-based higher-order combinations."
+  - "Use deterministic seeds and bounded scope for authorized property-based or fuzz testing."
+  - "Do not promise exhaustive combinations; record excluded combinations and residual risk."
+  - "Use mutation or fault-seeding analysis when available to assess whether the suite detects meaningful defects."
+
+execution_readiness:
+  required:
+    - approved_scope_and_assurance_level
+    - environment_build_and_service_health
+    - accounts_roles_tenants_and_data_ownership
+    - safe_fixture_setup_cleanup_and_collision_control
+    - authentication_without_exposing_secrets
+    - mutation_and_security_authorization_when_applicable
+    - business_and_cross_layer_readback_access
+    - evidence_path_and_redaction
+  result_rule: "No readiness item, no execution claim; return BLOCKED or DESIGN_ONLY with the exact missing item."
+
+tooling:
+  status: PARTIAL_CONFIGURED
+  configured:
+    api_runner_and_reporting:
+      tool: POSTMAN_CLI
+      validated_version: "1.43.0"
+      collection_format: "3"
+      collection_root: "Automation/Postman-Collections/ingestion-safe-assurance"
+      runner: "tools/run_ingestion_postman.mjs"
+      current_scope: [live_contract, unauthenticated_security, all_get_auth_boundary, authenticated_readonly_scaffold]
+      reporting: REDACTED_LOCAL_CLI_CAPTURE
+      cloud_reporting: false
+      evidence: "Outputs/cross-sprint/ingestion-api-postman-safe-assurance-2026-07-19.md"
+  capability_slots:
+    - openapi_lint_and_dereference
+    - schema_contract_validation
+    - api_runner_and_reporting
+    - property_based_or_fuzz_generation
+    - contract_diff
+    - consumer_driven_contract
+    - db_event_and_observability_readback
+  remaining_gaps:
+    - schema_contract_validation_tool_not_selected
+    - property_based_or_fuzz_generation_not_configured
+    - contract_diff_not_configured
+    - consumer_driven_contract_not_configured
+    - db_event_and_observability_readback_not_configured
+    - authenticated_execution_context_missing_in_current_process
+    - mutation_fixture_cleanup_and_approval_missing
+  rule: "Select tools from the official project stack; do not install or invent a parallel framework without approval."

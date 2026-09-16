@@ -1,0 +1,4 @@
+interface:
+  display_name: "Test Advisor"
+  short_description: "Recommend a tickable checklist of test types with rationale"
+  default_prompt: "Use $44-test-advisor for this QA task."

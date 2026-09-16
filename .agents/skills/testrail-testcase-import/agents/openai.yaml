@@ -1,0 +1,4 @@
+interface:
+  display_name: "TestRail Testcase Import"
+  short_description: "Discover, validate, and safely import TestRail cases"
+  default_prompt: "Use $testrail-testcase-import to validate this testcase export and prepare a dry-run TestRail import."

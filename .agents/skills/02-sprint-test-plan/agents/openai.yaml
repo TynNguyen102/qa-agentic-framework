@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sprint Test Plan"
+  short_description: "Plan QA scope and execution for a sprint"
+  default_prompt: "Use $02-sprint-test-plan for this QA task."

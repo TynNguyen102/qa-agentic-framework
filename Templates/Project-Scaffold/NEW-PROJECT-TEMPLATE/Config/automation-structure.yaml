@@ -1,0 +1,25 @@
+schema_version: 1
+status: NOT_CONFIGURED
+purpose: "Tổ chức automation theo User Story và business journey, đồng thời kiểm soát evidence Playwright, cho project này."
+
+repository_gate:
+  robot_framework_repo: NOT_CONFIGURED
+  robot_project_root: NEED_CONFIG
+  playwright_official_repo: NEED_CONFIG
+  robot_profile: "Config/robot-framework-profile.yaml"
+  rule: "Resolve qa-config.local.yaml, inspect the official framework and preserve dirty user changes before creating or moving code."
+
+robot_framework:
+  story_centric_required: true
+  root_source: "qa-config.local.yaml -> automation.robot.local_path"
+  planned_project_root: "Projects/NEW-PROJECT/"
+  story_folder_pattern: "Projects/NEW-PROJECT/<JIRA_KEY>/"
+  suite_types: [Functional, API, Contract, UI, E2E, Integration, DataIntegrity, Security, Smoke, Regression]
+  suite_file_pattern: "test_<jira_key_compact>_<feature_slug>_<type>.robot"
+
+playwright:
+  root: "Automation/Playwright"
+  step_policy: "Wrap each business step/checkpoint in test.step; do not create a step for every low-level click."
+  default_mode: standard
+  retention_rule: "Store large artifacts in CI/artifact storage; keep only sanitized links/checksums in tracked reports."
+  security_rule: "Redact tokens, cookies, credentials, sensitive response bodies and unnecessary personal data from artifacts."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Smoke and Regression Testing"
+  short_description: "Select and run smoke or regression coverage"
+  default_prompt: "Use $32-smoke-regression-testing for this QA task."

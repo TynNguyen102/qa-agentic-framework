@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{api_base_url}}/health"
+method: GET
+headers:
+  Accept: application/json
+  Authorization: Bearer qa-invalid-synthetic-token
+  X-Tenant-Id: qa-invalid-synthetic-tenant
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Invalid bearer returns 401', function () { pm.response.to.have.status(401); });
+      pm.test('Invalid bearer is not reflected', function () { pm.expect(pm.response.text()).not.to.include('qa-invalid-synthetic-token'); });
+      pm.test('No stack trace is exposed', function () { pm.expect(pm.response.text()).not.to.match(/stacktrace|exception\s*:/i); });
+    language: text/javascript
+order: 4000

@@ -1,0 +1,4 @@
+interface:
+  display_name: "UI and UX Testing"
+  short_description: "Test interface behavior consistency and UX quality"
+  default_prompt: "Use $21-ui-ux-testing for this QA task."

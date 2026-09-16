@@ -1,0 +1,34 @@
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+results/
+testing-output/**/raw/
+node_modules/
+.DS_Store
+Projects/*/session-state.local.yaml
+Projects/*/qa-config.local.yaml
+Projects/*/Knowledge-Base/GitLab-Mirror/cache/
+.postman/logs/
+Automation/Playwright/screenshots/
+
+# Thêm 2026-09-04: file evidence THÔ không được commit.
+# File export vuln chứa đường dẫn source, số dòng và code excerpt của vuln CHƯA VÁ —
+# spec 027 FR-008 gọi đây là "an attack map". Chỉ commit bản đã che, không commit bản gốc.
+**/Evidence/**/raw/
+
+# DB connection creds (<PENTEST-REPO>) — KHÔNG commit, thêm 2026-09-08
+Projects/*/Knowledge-Base/DB/connection/*.local.yaml
+**/*.creds.local.yaml
+
+# Thêm 2026-09-09: output Excel sinh ra bởi script job (DEMO-6562 aggregation, DEMO-7269 risk
+# scoring...) — chứa asset_id/hostname/CVE thật của DEV, dữ liệu tái sinh được từ script,
+# không cần commit.
+Projects/*/Modules/*/scripts/data/
+Projects/*/Modules/*/data/
+
+# Thêm 2026-09-10: session-cookie do tools/ui-automation/mint.mjs sinh ra khi chạy nhầm từ
+# thư mục gốc repo thay vì tools/ui-automation/ (nơi đã có .gitignore riêng cho pattern này) —
+# chứa __Secure-next-auth.session-token thật, KHÔNG được commit.
+/state_*.json

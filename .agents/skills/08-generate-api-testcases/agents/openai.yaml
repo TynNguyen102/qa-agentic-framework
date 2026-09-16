@@ -1,0 +1,4 @@
+interface:
+  display_name: "Generate API Testcases"
+  short_description: "Generate API testcases from contract and rules"
+  default_prompt: "Use $08-generate-api-testcases for this QA task."

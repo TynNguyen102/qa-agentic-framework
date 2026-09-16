@@ -1,0 +1,65 @@
+schema_version: 1
+status: DRAFT
+updated_at: "2026-09-16"
+purpose: >
+  Confidence Score CÓ GIẢI THÍCH cho một output của agent (bộ testcase, verdict execution, defect draft,
+  báo cáo). Cố tình KHÔNG phải một con số "AI đúng bao nhiêu %" — repo không có evaluation dataset đủ
+  lớn để tuyên bố con số đó (xem governance/AI_RESULT_ASSURANCE_MODEL.md).
+consumed_by: ["qa-router", "09-review-testcases", "24-test-coverage-audit", "36-log-jira-defect", "33-test-reporting"]
+
+# --- 8 thành phần (brief §XXVI) ---
+components:
+  source_quality:
+    question: "Nguồn expected có thẩm quyền tới đâu?"
+    scale: {3: "APPROVED source của đúng project", 2: "live contract chưa được owner duyệt", 1: "cached/DRAFT", 0: "không có nguồn"}
+  requirement_completeness:
+    question: "AC/rule có đủ để design test không?"
+    scale: {3: "đủ, testable", 2: "đủ phần chính, vài chỗ NEED_CONFIRM", 1: "nhiều chỗ mơ hồ", 0: "không có AC"}
+  traceability:
+    question: "Mỗi testcase/verdict có dẫn được requirement + risk không?"
+    scale: {3: "100% có trace", 2: ">=80%", 1: "<80%", 0: "không trace"}
+  coverage:
+    question: "Có denominator thật theo professional-coverage-model.yaml không?"
+    scale: {3: "có denominator + residual risk", 2: "có denominator, thiếu residual risk", 1: "chỉ đếm testcase", 0: "không đo"}
+  execution_evidence:
+    question: "Có evidence runtime hay chỉ đọc code/spec?"
+    scale: {3: "CONFIRMED, có readback đa lớp", 2: "CONFIRMED một lớp", 1: "INFERRED", 0: "ASSUMED/NOT_CHECKED"}
+  reproducibility:
+    question: "Chạy lại có ra cùng kết quả không?"
+    scale: {3: "đã lặp lại và khớp", 2: "chạy 1 lần, deterministic", 1: "non-deterministic chưa đo variance", 0: "không tái hiện được"}
+  review_status:
+    question: "Đã có người review chưa?"
+    scale: {3: "reviewer approve", 2: "Review Agent pass, chờ người", 1: "chưa review", 0: "bị reject"}
+  conflict_status:
+    question: "Còn conflict mở không?"
+    scale: {3: "không có conflict", 2: "chỉ MINOR", 1: "có MAJOR mở", 0: "có BLOCKER mở"}
+
+report:
+  required_fields:
+    - confidence_id
+    - subject_type             # TESTCASE_SET | EXECUTION_VERDICT | DEFECT_DRAFT | COVERAGE_REPORT | ROUTING_DECISION
+    - subject_ref
+    - assessed_at
+    - component_scores         # map 8 component -> 0..3 + 1 dòng lý do MỖI component
+    - total                    # tổng thô 0..24
+    - band                     # theo bands dưới
+    - limiting_factors         # component nào kéo band xuống (bắt buộc khi band != HIGH)
+    - required_actions         # cần làm gì để lên band cao hơn
+    - human_review_required    # true|false
+
+bands:
+  HIGH:   {range: "21-24", meaning: "Dùng được, vẫn phải nêu residual risk", human_review_required: false}
+  MEDIUM: {range: "15-20", meaning: "Dùng được có điều kiện, phải nêu rõ limiting_factors", human_review_required: false}
+  LOW:    {range: "8-14",  meaning: "Chỉ là draft/candidate, không dùng làm oracle", human_review_required: true}
+  UNUSABLE: {range: "0-7", meaning: "Không được publish ra ngoài (Jira/Confluence/report)", human_review_required: true}
+
+hard_rules:
+  - "Bất kỳ component nào = 0 => band tối đa là LOW, bất kể tổng điểm."
+  - "conflict_status = 0 (có BLOCKER mở) => band UNUSABLE cho vùng ảnh hưởng."
+  - "execution_evidence <= 1 => KHÔNG được phát biểu verdict PASS/FAIL, chỉ được nói INFERRED."
+  - "Agent không được tự nâng band. Nâng band cần thay đổi bằng chứng thật, không phải đánh giá lại."
+  - "Con số total KHÔNG được trình bày như 'độ chính xác của AI'."
+
+reporting_rule: >
+  Khi báo cáo cho người: luôn hiện band + limiting_factors + required_actions.
+  Không bao giờ chỉ hiện con số.

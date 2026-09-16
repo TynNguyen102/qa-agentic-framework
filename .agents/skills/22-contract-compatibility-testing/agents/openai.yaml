@@ -1,0 +1,4 @@
+interface:
+  display_name: "Contract Compatibility Testing"
+  short_description: "Test API event and schema compatibility"
+  default_prompt: "Use $22-contract-compatibility-testing for this QA task."

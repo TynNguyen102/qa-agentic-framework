@@ -1,0 +1,4 @@
+interface:
+  display_name: "QMetry Testcase Import"
+  short_description: "Discover, validate, and safely import QMetry cases"
+  default_prompt: "Use $qmetry-testcase-import to validate this testcase export and prepare a dry-run QMetry import."

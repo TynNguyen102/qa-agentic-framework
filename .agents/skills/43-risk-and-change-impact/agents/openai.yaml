@@ -1,0 +1,4 @@
+interface:
+  display_name: "Risk & Change Impact"
+  short_description: "Map change impact and score risk before choosing test scope"
+  default_prompt: "Use $43-risk-and-change-impact for this QA task."

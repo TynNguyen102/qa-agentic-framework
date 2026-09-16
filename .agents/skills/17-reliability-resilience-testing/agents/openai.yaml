@@ -1,0 +1,4 @@
+interface:
+  display_name: "Reliability and Resilience Testing"
+  short_description: "Test recovery retries failover and resilience"
+  default_prompt: "Use $17-reliability-resilience-testing for this QA task."

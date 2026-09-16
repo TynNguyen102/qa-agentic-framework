@@ -1,0 +1,76 @@
+schema_version: 1
+status: ACTIVE
+updated_at: "2026-07-18"
+purpose: "Tránh merge conflict bằng audit event bất biến, một file cho mỗi execution hoàn tất."
+
+event_pattern: "Projects/<ACTIVE_PROJECT>/governance/audit-events/YYYY/MM/<timestamp>-<actor>-<task>.yaml"
+required_fields:
+  - schema_version
+  - event_id
+  - timestamp
+  - actor_alias
+  - skill
+  - status
+  - scope
+  - summary
+  - artifacts
+rules:
+  - "Không sửa hoặc xóa event cũ; tạo event mới với supersedes nếu cần đính chính."
+  - "Không lưu secret, token, credential, raw evidence hoặc PII không cần thiết."
+  - "Tên file phải duy nhất để nhiều member có thể merge độc lập."
+  - "governance/audit-log.md là lịch sử bootstrap cũ; event files là nguồn mới cho automation và aggregation."
+statuses: [DONE, DONE_WITH_CONCERNS, NEEDS_CONTEXT, BLOCKED]
+
+# ---------------------------------------------------------------------
+# LECH GIUA POLICY VA THUC TE — phat hien 2026-09-16 (gap #38 GAP_ANALYSIS)
+# KHONG tu sua required_fields de "cho khop", vi lam vay la ha chuan trong im lang.
+# Ghi lai de Lead quyet, va de automation biet ma khong parse sai.
+# ---------------------------------------------------------------------
+resolved_divergence:
+  detected_at: "2026-09-16"
+  detected_by: claude-code
+  finding: >
+    required_fields o tren yeu cau event_id va skill, nhung cac audit event truoc 2026-09-16 KHONG co
+    hai truong nay (chung dung event + actor_alias + timestamp + approved_by + scope). Policy va thuc te
+    da lech, nen bat ky automation nao doc theo required_fields deu bao fail hang loat.
+  decision: A
+  decided_by: "QA Lead (qa-lead@example.com) — 'ok thuc hien de hoan tat nhom B', 2026-09-16"
+  decided_rationale: >
+    Chon A (giu nguyen chuan cao, bo sung event_id + skill cho event MOI) thay vi B (ha hai truong xuong
+    recommended). Ly do: (1) B la ha chuan trong im lang, mat kha nang truy nguoc ket qua ve skill nao
+    sinh ra no; (2) A da la thuc te dang chay — toan bo event tu 2026-09-16 do phien nay ghi deu CO du
+    hai truong, kiem chung bang grep. A chi hop thuc hoa cai dang lam.
+  chosen: >
+    Giu required_fields nhu cu. KHONG sua event cu (audit la bat bien — xem rules o tren).
+    Cuong che tu enforced_from tro di.
+  enforced_from: "2026-09-17"
+  enforced_from_rationale: >
+    Dat 17/09 chu khong phai 16/09 vi trong ngay 16/09 co mot event do phien khac ghi
+    (20260916T090000-claude-code-daily-check.yaml) chua co hai truong. Khong sua event cua phien khac,
+    va khong dat moc lam no fail ngay. Tu 17/09 moi event deu phai du.
+  enforcement: >
+    tools/qa_schema_check.py -> check_audit_events(): event co timestamp >= enforced_from ma thieu
+    truong bat buoc thi HARD FAIL. Event truoc moc do chi WARN, khong chan.
+  rollback: "Doi decision ve B thi ha event_id/skill xuong recommended_fields va bo check trong qa_schema_check.py."
+
+known_divergence_history:   # GIU LAI lam lich su — da duoc giai quyet o resolved_divergence phia tren
+  detected_at: "2026-09-16"
+  detected_by: claude-code
+  finding: >
+    required_fields o tren yeu cau event_id va skill, nhung cac audit event thuc te trong
+    Projects/Example-Project/governance/audit-events/2026/09/ KHONG co hai truong nay. Chung dung
+    event + actor_alias + timestamp + approved_by + scope. Nghia la policy va thuc te da lech,
+    va bat ky automation nao doc theo required_fields deu se bao fail hang loat.
+  options_for_lead:
+    - id: A
+      action: "Bo sung event_id + skill vao cac event moi tu nay; khong sua event cu (bat bien)."
+      tradeoff: "Giu nguyen chuan cao; event cu van lech nen validator phai bo qua truoc mot moc thoi gian."
+    - id: B
+      action: "Ha event_id/skill xuong recommended_fields, giu required toi thieu nhu thuc te dang dung."
+      tradeoff: "Khop thuc te ngay, nhung mat kha nang truy nguoc theo skill."
+  status: RESOLVED_2026-09-16_OPTION_A
+  interim_rule: >
+    Tam thoi: event MOI nen ghi ca event_id va skill. Validator CHUA duoc bat cuong che cho den khi
+    Lead chon A hoac B — khong tu dong fail CI vi viec nay.
+
+

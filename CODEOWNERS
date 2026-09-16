@@ -1,0 +1,62 @@
+# CODEOWNERS — các path bên dưới bắt buộc phải có approve từ code owner
+# trước khi Merge Request được merge vào main.
+# (Cấu hình "require code owner approval" bật ở Settings > Repository > Protected branches)
+#
+# ============================================================
+# HAI CO-OWNER — cập nhật 2026-09-03
+# ============================================================
+# Trước 2026-09-03 chỉ có một owner duy nhất (@<user>). Hệ quả: khi chính owner
+# tạo MR đụng path lõi thì KHÔNG AI approve được — GitLab cấu hình
+# merge_requests_author_approval = false, tác giả không tự duyệt MR của mình.
+# MR !1 ngày 2026-09-03 vướng đúng chỗ này.
+#
+# Nay có HAI owner. Chỉ cần MỘT trong hai approve là merge được
+# (approvals_required = 1), nên ai tạo MR thì người còn lại duyệt.
+#
+#   @<user>  — Nguyen Thi Thanh Tuyen, QA Lead
+#   @hientt56       — Tran Thi Hien, Maintainer
+#
+# Thêm owner mới: chỉ thêm người ĐỌC HIỂU được nội dung path đó. Owner mà duyệt
+# lấy lệ thì lớp bảo vệ này thành thủ tục rỗng.
+
+# ============================================================
+# Core skill/agent definition (khoá) — member vẫn push/tạo MR bình thường,
+# nhưng cần owner duyệt các path này trước khi merge.
+#
+# Vì sao khoá: đây là nơi định nghĩa CÁCH AI LÀM VIỆC. Sửa sai ở đây thì mọi
+# phiên sau đều sai theo, và không ai phát hiện ngay. Tiền lệ: 2026-08-28 phát
+# hiện 7 skill lệch nhau giữa .agents/ và .claude/ — tình cờ tìm ra khi thêm
+# skill mới, không phải nhờ review.
+# ============================================================
+/.agents/    @<user> @hientt56
+/.claude/    @<user> @hientt56
+/SKILL.md    @<user> @hientt56
+/AGENTS.md   @<user> @hientt56
+/CLAUDE.md   @<user> @hientt56
+/CODEX.md    @<user> @hientt56
+/governance/ @<user> @hientt56
+/evals/      @<user> @hientt56
+/tools/      @<user> @hientt56
+
+# ============================================================
+# Chính file này — thêm 2026-09-03
+#
+# Trước đó CODEOWNERS không tự bảo vệ mình: bất kỳ member nào cũng sửa được để
+# tự thêm mình làm owner, rồi tự duyệt mọi thứ. Nay sửa file này cũng cần owner
+# duyệt.
+# ============================================================
+/CODEOWNERS  @<user> @hientt56
+
+# ============================================================
+# Các phần còn lại — KHÔNG cần owner duyệt
+#
+#   Projects/<name>/   testcase, evidence, defect, knowledge-base, outputs
+#   Team/              tài liệu team
+#   Templates/         mẫu
+#   Config/            cấu hình cấp workspace
+#   testing-output/    kết quả chạy
+#
+# Những path này vẫn cần 1 approve thường từ BẤT KỲ member nào (rule "All Members",
+# any_approver) — thủ tục nhẹ, không cần đúng owner. Đây là nơi phần lớn công việc
+# QC hàng ngày diễn ra, nên đừng nhầm là mọi thứ đều phải chờ Lead duyệt.
+# ============================================================

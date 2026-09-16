@@ -1,0 +1,4 @@
+interface:
+  display_name: "Setup Test Automation"
+  short_description: "Scaffold maintainable automation projects"
+  default_prompt: "Use $12-setup-test-automation for this QA task."

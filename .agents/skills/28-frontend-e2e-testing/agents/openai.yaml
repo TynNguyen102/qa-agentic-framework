@@ -1,0 +1,4 @@
+interface:
+  display_name: "Frontend E2E Testing"
+  short_description: "Test complete frontend journeys with Playwright"
+  default_prompt: "Use $28-frontend-e2e-testing for this QA task."

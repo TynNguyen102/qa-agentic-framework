@@ -1,0 +1,36 @@
+project:
+  name: NEW-PROJECT
+  full_name: "NEED_CONFIRM"
+  jira_project_key: NEED_CONFIRM
+  confluence_space: NEED_CONFIRM
+
+sprint:
+  current: TBD
+
+environments:
+  sit:
+    base_url: NEED_CONFIRM
+    status: PENDING
+  uat:
+    base_url: NEED_CONFIRM
+    status: PENDING
+
+automation:
+  robot:
+    local_path_config: "qa-config.local.yaml -> automation.robot.local_path"
+    profile: "Config/robot-framework-profile.yaml"
+  playwright:
+    profile: "Config/automation-structure.yaml"
+    status: NOT_CONFIGURED
+
+integration:
+  test_management:
+    tool: NEED_CONFIRM  # e.g. TestRail | QMetry — delete the profile file for whichever this project does NOT use
+    profile: "Config/testrail-profile.yaml"  # or Config/qmetry-profile.yaml
+    live_import_allowed: false
+  jira_subtasks:
+    profile: "Config/jira-subtask-profile.yaml"
+
+notes:
+  - "Scaffold from Templates/Project-Scaffold/. Fill in real values as this project's sources are
+     confirmed; do not invent values to make this look complete."

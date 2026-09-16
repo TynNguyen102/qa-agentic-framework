@@ -1,0 +1,4 @@
+interface:
+  display_name: "Execute Approved Testcases"
+  short_description: "Execute approved cases with professional evidence"
+  default_prompt: "Use $13-execute-approved-testcases for this QA task."

@@ -1,0 +1,180 @@
+schema_version: 1
+status: DRAFT            # DRAFT — chưa Lead review. Không dùng làm căn cứ ép skill đổi hành vi.
+updated_at: "2026-09-16"
+purpose: >
+  Gỡ gắn cứng tool khỏi logic nghiệp vụ của skill (gap #28 trong QA_AGENTIC_WORKFLOW_GAP_ANALYSIS.md).
+  Skill khai CAPABILITY nó cần; file này ánh xạ capability -> tool thật đang có trong workspace.
+  Đổi tool = sửa file này, KHÔNG phải sửa 51 skill.
+principle: "Skill nói 'tôi cần chạy UI trên browser', không nói 'tôi cần Playwright'."
+related:
+  - "Config/QA-Agent/schemas/skill-io.schema.yaml (mục vendor_neutrality)"
+  - "Projects/<ACTIVE_PROJECT>/Config/tool-inventory.yaml (trạng thái CÀI ĐẶT THẬT — nguồn sự thật về availability)"
+  - "Projects/<ACTIVE_PROJECT>/Config/robot-framework-profile.yaml"
+  - "Projects/<ACTIVE_PROJECT>/Config/automation-structure.yaml"
+
+# ---------------------------------------------------------------------
+# QUAN TRỌNG: file này nói "dùng tool nào KHI CÓ".
+# Nó KHÔNG khẳng định tool đã được cài. Trạng thái cài đặt thật nằm ở
+# Projects/<ACTIVE_PROJECT>/Config/tool-inventory.yaml — LUÔN đọc file đó trước khi claim chạy được.
+# ---------------------------------------------------------------------
+
+capabilities:
+
+  ui_browser_automation:
+    description: "Điều khiển trình duyệt thật: click, nhập, chụp màn hình, đo layout, bắt network"
+    used_by: ["13", "19", "21", "28", "41", "44"]
+    adapters:
+      - id: playwright_bundled
+        rank: 1
+        entrypoint: "tools/ui-automation/node/node.exe + script .mjs trong tools/ui-automation/"
+        availability_ref: "tool-inventory.yaml"
+        notes: "Node + Playwright ĐÃ bundled sẵn trong repo — đừng báo 'không có node'."
+      - id: playwright_project
+        rank: 2
+        entrypoint: "Automation/Playwright/"
+        notes: "Framework project-level; dùng khi cần fixture/report chuẩn, không chỉ script rời."
+      - id: selenium
+        rank: 3
+        availability_ref: "tool-inventory.yaml"
+        notes: "Chưa dùng trong workspace này. Chỉ thêm khi có lý do thật."
+      - id: cypress
+        rank: 4
+        notes: "Chưa dùng."
+    contract:
+      inputs: [url, account_ref, viewport, evidence_dir]
+      outputs: [screenshot, video_or_trace, console_log, network_har, measurements_json]
+      must_produce: "evidence record theo test-result.schema.yaml (kèm redaction_status)"
+
+  api_testing:
+    description: "Gọi HTTP/gRPC, kiểm schema, kiểm status + body + header"
+    used_by: ["08", "14", "22", "23", "35", "38"]
+    adapters:
+      - id: node_fetch_script
+        rank: 1
+        entrypoint: "tools/ui-automation/node/node.exe + script .mjs"
+        notes: "Cách đang dùng thật nhiều nhất trong repo. Header xác thực là `x-token`, KHÔNG phải Authorization Bearer."
+      - id: postman_newman
+        rank: 2
+        entrypoint: "Automation/Postman-Collections/"
+      - id: robot_requests
+        rank: 3
+        entrypoint: "Automation/Robot-Framework/"
+      - id: rest_assured
+        rank: 4
+        notes: "Chưa có trong workspace."
+    contract:
+      inputs: [base_url_full_host, path, method, headers, body, account_ref]
+      outputs: [status_code, response_body_full, response_headers, timing]
+      must_produce: "ĐỌC TRỌN response — không chỉ lấy một field như `total`. Xem eval ZT-003."
+
+  acceptance_suite_runner:
+    description: "Chạy bộ testcase có cấu trúc, sinh report máy đọc"
+    used_by: ["11", "12", "13", "32"]
+    adapters:
+      - id: robot_framework
+        rank: 1
+        entrypoint: "Automation/Robot-Framework/"
+        profile_ref: "Projects/<ACTIVE_PROJECT>/Config/robot-framework-profile.yaml"
+        ci_ref: "Automation/Robot-Framework/.gitlab-ci.yml"
+        notes: "Là Quality Execution Engine hiện tại của workspace."
+      - id: playwright_test_runner
+        rank: 2
+        entrypoint: "Automation/Playwright/"
+    contract:
+      outputs: [junit_xml, html_report, per_case_status]
+      must_produce: "status theo đúng 8 giá trị của test-result.schema.yaml, KHÔNG tự chế tên trạng thái."
+
+  load_and_performance:
+    description: "Sinh tải, đo latency percentile, throughput, error rate"
+    used_by: ["20", "25", "27"]
+    gate: "G3 — destructive test. Assurance L4, yêu cầu môi trường riêng."
+    adapters:
+      - id: k6
+        rank: 1
+        entrypoint: "Automation/k6/"
+        availability_ref: "tool-inventory.yaml"
+        known_state_20260916: >
+          ĐÃ CÀI — k6 v1.7.1 tại C:\Program Files\k6\k6.exe, kiểm live 2026-09-16 bằng `k6 version`.
+          ĐÍNH CHÍNH: bản trước của file này (và tool-inventory.yaml trước 16/09) ghi NOT_INSTALLED — SAI.
+          Nút thắt của load test KHÔNG còn là công cụ, mà là: thiếu SLO, thiếu workload model,
+          thiếu môi trường riêng (gate G3 / assurance L4), và Automation/k6/ chưa có script nào.
+      - id: jmeter
+        rank: 2
+        known_state_20260916: "Chưa có trong workspace."
+    contract:
+      preconditions: [approved_workload, approved_slo, dedicated_environment, stop_condition]
+      rule: "Không lấy con số tải từ prompt làm target nếu chưa có nguồn — xem skill 25."
+
+  database_query:
+    description: "Truy vấn DB để readback/đối chiếu"
+    used_by: ["34", "38", "13"]
+    gate: "Assurance level theo assurance-levels.yaml. Write/delete cần G3/G4."
+    adapters:
+      - id: db_readonly_mcp
+        rank: 1
+        availability_ref: "tool-inventory.yaml"
+        known_state_20260916: "NOT_CONFIGURED"
+      - id: script_client
+        rank: 2
+        notes: "Script trực tiếp; chỉ SELECT trong allowlist."
+    contract:
+      rule: "KHÔNG chạy write/delete trên môi trường không được phép. Ghi lại câu query đã chạy."
+
+  issue_tracker:
+    description: "Đọc/ghi ticket"
+    used_by: ["36", "37", "39", "daily-check", "jira-test-subtasks"]
+    gate: "Mọi ghi = G9 (live write). Hook .claude/hooks/pre_jira_write_gate.py cưỡng chế 6 cổng."
+    adapters:
+      - id: atlassian_mcp
+        rank: 1
+        notes: "Đang dùng. Không upload được attachment."
+      - id: jira_rest
+        rank: 2
+        notes: "Dùng cho việc MCP không làm được, vd đính kèm ảnh (JIRA_API_TOKEN)."
+    contract:
+      rule: "Ghi xong PHẢI readback bằng getJiraIssue trước khi báo 'đã tạo/đã sửa'."
+
+  test_management:
+    description: "Import testcase, cập nhật kết quả"
+    used_by: ["qmetry-testcase-import", "testrail-testcase-import"]
+    adapters:
+      - id: qmetry
+        rank: 1
+        select_by: "Projects/<ACTIVE_PROJECT>/qa-config.yaml -> integration.test_management.tool"
+      - id: testrail
+        rank: 1
+    contract:
+      rule: "Chặn import live khi validation.live_import_allowed = false."
+
+  source_control:
+    description: "Đọc MR/diff/commit/spec"
+    used_by: ["01", "42", "43", "daily-check"]
+    adapters:
+      - id: gitlab_rest
+        rank: 1
+        notes: "Không có MCP; gọi REST với header PRIVATE-TOKEN. WebFetch KHÔNG gắn được header nên không dùng được."
+      - id: local_mirror
+        rank: 2
+        entrypoint: "Projects/<ACTIVE_PROJECT>/Knowledge-Base/GitLab-Mirror/"
+        notes: "Dùng khi không vào được mạng nội bộ. Kết quả PHẢI gắn INFERRED, không phải CONFIRMED."
+      - id: github
+        rank: 3
+        notes: "Cùng contract, chưa dùng cho project này."
+
+# ---------------------------------------------------------------------
+selection_rules:
+  - "Đọc Projects/<ACTIVE_PROJECT>/Config/tool-inventory.yaml TRƯỚC. Tool NOT_INSTALLED/NOT_CONFIGURED thì coi như không có."
+  - "Chọn adapter rank thấp nhất mà THỰC SỰ khả dụng."
+  - "Không adapter nào khả dụng => trả NEED_CONFIG: <capability>_ADAPTER_UNAVAILABLE. KHÔNG claim đã chạy."
+  - "Skill KHÔNG được hard-code tên tool trong phần mô tả nghiệp vụ — chỉ khai capability."
+  - "Đổi adapter không đổi contract: outputs phải giữ nguyên hình dạng để skill sau dùng được."
+
+backward_compatibility:
+  - "51 skill hiện có KHÔNG phải sửa ngay — chúng vẫn chạy như cũ."
+  - "File này mô tả ánh xạ đang có trên thực tế, chưa cưỡng chế."
+  - "Khi sửa lớn một skill, chuyển nó sang khai capability thay vì tên tool."
+
+not_yet_done:
+  - "Chưa có cơ chế tự kiểm skill nào còn hard-code tên tool."
+  - "Chưa map capability cho mobile (skill 29) và accessibility scanner (skill 19)."
+  - "Trạng thái availability ở đây là ảnh chụp 2026-09-16, nguồn sự thật vẫn là tool-inventory.yaml."

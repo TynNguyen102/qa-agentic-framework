@@ -1,0 +1,264 @@
+schema_version: 3
+schema_changelog:
+  - version: 3
+    date: "2026-09-05"
+    change: >
+      Tightened automation_candidate from a free string to a closed Yes/No/Partial enum with
+      explicit exclusion criteria, and added automation_layers (subset of {UI, API, DB}) so a case
+      hands 11-generate-automation-script a ready decision instead of requiring re-analysis.
+      Adapted from a cross-project review of a manual tester's own testcase-generation convention,
+      which paired every case with an explicit automation-feasibility + layer decision.
+  - version: 2
+    date: "2026-07-19"
+    change: >
+      Added coverage_type and oracle_layers to required_fields, with explicit allowed-enums,
+      after audit found scenario_type alone let an all-happy-path suite pass validation and
+      let oracle_layers stay empty while still being described as required for PROVEN state.
+purpose: "Stable internal testcase model independent of any test management tool's field/column layout"
+required_fields:
+  - external_id
+  - title
+  - linked_requirements
+  - linked_coverage_units
+  - priority
+  - test_basis
+  - scenario_type
+  - coverage_type
+  - oracle_layers
+  - test_level
+  - preconditions
+  - steps
+fields:
+  external_id: {type: string, description: "Stable local testcase identifier"}
+  title: {type: string, source: "Projects/<ACTIVE_PROJECT>/Config/testcase-title-profile.yaml"}
+  objective: {type: string}
+  linked_requirements: {type: array, items: string}
+  linked_rules: {type: array, items: string}
+  linked_coverage_units: {type: array, items: string, description: "IDs from Config/QA-Agent/professional-coverage-model.yaml denominator"}
+  test_basis: {type: array, items: string, description: "AC, BR, approved decision, risk or change source IDs"}
+  risk: {type: string, allowed: [critical, high, medium, low]}
+  priority: {type: string}
+  scenario_type: {type: string, description: "Happy, Negative, Corner, Impact, E2E, Regression or another approved semantic type"}
+  test_level: {type: string, description: "Functional, API, SIT, E2E, DB or another configured level"}
+  technique: {type: array, items: string}
+  coverage_type:
+    type: array
+    items: string
+    min_items: 1
+    description: >
+      Which professional-coverage-model.yaml check(s) this testcase provides evidence for.
+      Must match check names verbatim from that file's dimensions.*.checks (flattened below);
+      do not invent a new category name here — add it to professional-coverage-model.yaml first.
+    allowed:
+      - objectives_and_acceptance_criteria
+      - business_invariants_and_decisions
+      - actors_roles_permissions_and_tenants
+      - lifecycle_states_and_transitions
+      - data_definitions_and_conditional_rules
+      - error_recovery_audit_and_nonfunctional_expectations
+      - source_conflicts_freshness_and_supersession
+      - happy_and_alternate_paths
+      - negative_and_invalid_operations
+      - equivalence_and_boundary_classes
+      - decision_tables_and_cross_field_rules
+      - state_sequence_time_and_expiry
+      - duplicate_idempotency_retry_and_concurrency
+      - role_tenant_and_cross_entity_isolation
+      - partial_failure_rollback_and_cleanup
+      - contract_and_protocol_semantics
+      - business_side_effects_and_readback
+      - authentication_authorization_and_abuse
+      - persistence_events_cache_and_downstream_consistency
+      - compatibility_resilience_and_observability
+      - route_guards_navigation_and_deep_links
+      - loading_empty_error_success_partial_and_stale_states
+      - form_validation_timing_messages_and_recovery
+      - state_preservation_refresh_back_forward_and_multi_tab
+      - responsive_browser_device_locale_theme_and_zoom
+      - api_error_mapping_and_no_client_only_enforcement
+      - accessibility_semantics_keyboard_focus_reflow_and_assistive_technology
+      - persona_goal_and_task_success
+      - discoverability_learnability_efficiency_and_consistency
+      - cognitive_load_feedback_error_prevention_and_recovery
+      - terminology_content_and_localization
+      - user_impact_frequency_and_recoverability
+      - entry_preconditions_and_data_ownership
+      - cross_feature_sequence_and_state_handoffs
+      - cross_service_eventual_consistency_and_readback
+      - interruption_resume_retry_cancel_and_reentry
+      - compensation_rollback_cleanup_and_audit
+      - critical_outcome_and_downstream_business_effect
+      - schema_constraints_integrity_and_lineage
+      - create_update_delete_and_historical_data
+      - transaction_atomicity_reconciliation_and_migration
+      - event_order_duplicates_loss_dlq_and_replay
+      - dependency_contract_timeout_and_partial_failure
+      - privacy_masking_retention_and_tenant_separation
+      - threat_model_and_trust_boundaries
+      - authentication_session_and_token_lifecycle
+      - object_function_property_and_tenant_authorization
+      - injection_ssrf_file_handling_and_input_abuse
+      - sensitive_data_secrets_logging_and_error_exposure
+      - rate_resource_business_flow_abuse_and_configuration
+      - performance_capacity_spike_soak_and_volume
+      - reliability_retry_recovery_failover_rto_and_rpo
+      - compatibility_version_platform_and_configuration_parity
+      - infrastructure_routing_tls_cache_session_and_deployment
+      - observability_logs_metrics_traces_alerts_and_correlation
+      - accessibility_and_usability_targets
+      - change_delta_and_dependency_graph
+      - impacted_and_full_regression_selection
+      - defect_history_recurrence_and_escape_patterns
+      - feature_flags_migrations_rollback_and_mixed_versions
+      - entry_exit_criteria_residual_risk_and_owner_decision
+  smoke: {type: string}
+  regression: {type: string}
+  preconditions: {type: array, items: string}
+  roles: {type: array, items: string}
+  environment: {type: string}
+  protocol: {type: string, description: "UI, REST_HTTP, GRAPHQL, GRPC, WEBSOCKET, ASYNC_EVENT, DB, MOBILE or another approved layer/protocol"}
+  oracle_layers:
+    type: array
+    items: string
+    min_items: 1
+    description: "Cross-layer evidence needed to prove the business effect; must match professional-coverage-model.yaml cross_layer_oracle.candidate_layers."
+    allowed: [UI, API, DB, EVENT, AUDIT, CACHE, FILE, QUEUE, DOWNSTREAM, LOG_TRACE]
+  steps:
+    type: array
+    item_fields: [step_no, action, test_data, expected_result, readback_oracle]
+    description: >
+      When a step's readback_oracle includes API for a UI-driven action (the user clicked
+      Save/Edit/Delete in the UI, not a direct API call), "API" is ambiguous by itself — state
+      whether expected_result covers the outgoing REQUEST (endpoint/method/payload the UI actually
+      sent — this is what a DevTools Network-tab check verifies, and catches a UI that displays the
+      right value but transmits the wrong one: a common failure with dropdown IDs, multi-select
+      arrays, and hidden/derived fields), the RESPONSE (status code + body field values), or both.
+      Default to both when feasible — they catch different bug classes and neither substitutes for
+      the other.
+  automation_candidate:
+    type: string
+    allowed: [Yes, No, Partial]
+    description: >
+      Yes = fully scriptable from the stated steps/oracle. No = do not script — reserve for
+      genuinely subjective evaluation (aesthetics, AI-generated free-text tone with no predictable
+      exact content), a real third-party dependency outside test control (real email/SMS delivery,
+      an external physical device), or a realistically-unschedulable wait (e.g. a 30-day operational
+      metric). Partial = some steps/assertions are scriptable and others are not (e.g. the setup can
+      be automated but the final assertion needs human judgment) — explain the split in
+      automation_reason. Do not default to No merely because the case is complex (concurrency,
+      multi-tab, multi-step) when it can still be scripted deterministically.
+  automation_reason: {type: string, description: "Required when automation_candidate is No or Partial; explain what specifically blocks full automation."}
+  automation_layers:
+    type: array
+    items: string
+    allowed: [UI, API, DB]
+    description: >
+      Every layer automation can realistically assert for this case, not just the easiest one —
+      e.g. a "create succeeds" case usually has evidence at all three (UI: new row appears, API:
+      response carries the new ID, DB: record persisted with the right fields), so list all three
+      the automation should actually check, not only UI. Must be a subset of this case's
+      oracle_layers restricted to {UI, API, DB} (oracle_layers may also include layers like EVENT,
+      AUDIT, CACHE that this project's current automation stack cannot yet assert — leave those out
+      of automation_layers, not out of oracle_layers). Required and non-empty when
+      automation_candidate is Yes or Partial; empty when automation_candidate is No.
+  dependencies: {type: array, items: string}
+  component: {type: string}
+  sprint: {type: string}
+  tags: {type: array, items: string}
+  need_confirm: {type: array, items: string}
+  residual_risk: {type: array, items: string}
+  source_evidence: {type: array, items: string}
+rules:
+  - "Expected results must cite a confirmed source for the active project."
+  - "HTTP status alone is not a business expected result."
+  - "Keep test basis, scenario type, test level, technique, coverage type, suite flags and automation candidacy as separate dimensions."
+  - "Do not force arbitrary automation percentages, exploratory row counts or High-priority-to-Smoke mappings."
+  - "Map this schema to a test management tool only through that project's confirmed profile (qmetry-profile.yaml or testrail-profile.yaml, per qa-config.yaml's integration.test_management.tool)."
+  - "Every testcase must link to at least one applicable coverage unit; N/A belongs in the coverage matrix, not as a fake testcase."
+  - "A testcase is PROVEN only when its required oracle_layers have execution evidence for the stated build/environment."
+  - "coverage_type and oracle_layers are required and must use only the allowed values above; empty arrays fail schema validation."
+  - "For a given requirement/US, if every generated testcase's coverage_type is only happy_and_alternate_paths, the suite is INCOMPLETE — either add negative/boundary/state/security/authz testcases for the applicable coverage units, or record them N/A_WITH_REASON in the coverage matrix per professional-coverage-model.yaml. Never present an all-happy-path suite as done without one of these two outcomes."
+  - "automation_candidate must be Yes/No/Partial, never left blank or a free-text guess; default to Yes unless one of the explicit No/Partial exclusion criteria in its description genuinely applies — complexity alone (concurrency, multi-tab, multi-step) is not a valid reason for No."
+  - "automation_layers is required and non-empty whenever automation_candidate is Yes or Partial, and must list every layer in {UI, API, DB} the case can actually assert, not only the easiest one — 11-generate-automation-script uses this field directly instead of re-deriving it."
+  - "For a UI-driven Create/Edit/Delete step whose readback_oracle includes API, expected_result must say explicitly whether it covers the outgoing request payload, the response, or both — never just 'kiểm tra API' with no distinction; a UI that renders the right value can still send the wrong request, and a correct request can still get the wrong response."
+
+# ==========================================================================
+# EXECUTION BLOCK — trạng thái thực thi sống trong CHÍNH file testcase
+# Bổ sung 2026-09-09. Lý do: `CURRENT_STATE.md` (chốt 04/09) ghi "file MD +
+# tc-status.py là source-of-truth cho testcase & PASS/FAIL", nhưng cả
+# `tools/tc-status.py` lẫn mục schema cho khối này đều KHÔNG TỒN TẠI —
+# `git log --all -S execution_result` trên file này TRỐNG, tức chưa bao giờ
+# được commit. Nay định nghĩa chính thức, dựa trên cách dùng THẬT đang có
+# trong Modules/pentest/TC/SP-7019_file-encryption-idor_testcases.md.
+# ==========================================================================
+execution_block:
+  status: CONFIRMED
+  added_at: "2026-09-09"
+  format: >
+    Mỗi testcase kèm 1 fenced code block ```yaml ngay dưới phần mô tả case đó.
+    Trạng thái PASS/FAIL sống trong khối này, KHÔNG sống ở bảng văn xuôi —
+    đó là điều làm cho file MD đọc được bằng máy.
+  validator: "python3 tools/tc-status.py [--check] [--root <dir>] [--story SP-XXXX]"
+  required_keys: [case, verdict, state]
+  optional_keys: [priority, run_at, run_by, env, build, account, evidence, defect, note]
+  enums:
+    verdict:
+      - PASS            # đạt, có bằng chứng
+      - FAIL            # không đạt
+      - BLOCKED         # không chạy được vì môi trường/hạ tầng
+      - NEED_DATA       # thiếu fixture/dữ liệu để chạy
+      - NEED_CONFIRM    # chạy rồi nhưng expected chưa được nguồn có thẩm quyền chốt
+      - NOT_RUN         # chưa chạy
+      - NOT_TESTABLE    # không thể kiểm được như đang viết
+    state:
+      - DESIGNED        # đã thiết kế
+      - REVIEWED        # đã review
+      - AUTOMATED       # đã có script
+      - EXECUTED        # đã chạy thật
+      - PROVEN          # đã chạy + đủ oracle_layers có evidence cho build/env đã nêu
+  rules:
+    - "verdict PASS mà state chưa tới EXECUTED là sai: chưa chạy thì không thể PASS."
+    - "state PROVEN yêu cầu evidence không rỗng (xem rule 'A testcase is PROVEN only when...' ở trên)."
+    - "verdict FAIL nên có `defect` trỏ tới FINDING-* hoặc key Jira; FAIL mà defect rỗng là nợ chưa ghi."
+    - "Không sửa verdict trong khối mà không cập nhật run_at/build — verdict cũ với build mới là bằng chứng lạc hậu."
+  enum_divergence_2026_09_16:
+    status: NEED_CONFIRM      # CAN LEAD QUYET — day la sua Core schema, cong G6
+    detected_by: "claude-code, qua `tools/tc-status.py --check`"
+    finding: >
+      19 case trong 3 file TC dang dung 2 gia tri KHONG co trong enum, nen validator bao loi.
+      KHONG tu sua enum va KHONG tu sua file — ca hai deu la quyet dinh cua Lead.
+    cases:
+      - value: OBSERVED_DEVIATION
+        field: verdict
+        count: 15
+        files: ["threat-hunting/TC/SP-6793_testcases.md", "ueba/TC/SP-7069_import-usecase_testcases.md"]
+        usage_observed: 'verdict: OBSERVED_DEVIATION + state: EXECUTED + oracle: "AC-01.5 — SRS Draft"'
+        analysis: >
+          DAY LA KHOANG TRONG THAT CUA ENUM, khong phai loi go nham. Nghia: da chay, QUAN SAT DUOC
+          hanh vi lech ky vong, nhung KHONG duoc ghi FAIL vi oracle (SRS/BRD) con Draft — chua co
+          nguon APPROVED de phan FAIL. Khac NEED_CONFIRM: NEED_CONFIRM la "chay roi nhung expected
+          chua duoc chot", con day la "chay roi, expected chua chot, VA da thay lech cu the".
+          Chinh 6 bug DEMO-7500..7505 duoc raise tu nhung case mang verdict nay.
+        recommendation: "THEM vao enum verdict. Kem rule: OBSERVED_DEVIATION bat buoc co `oracle` ghi ro nguon con Draft."
+      - value: CONFIRMED_BY_DEV
+        field: state
+        count: 4
+        files: ["pentest/TC/SP-7180_sast-rescan-reference_testcases.md"]
+        usage_observed: 'verdict: PASS + state: CONFIRMED_BY_DEV + oracle: "dev cmt 33054: ..."'
+        analysis: >
+          DAY LA DUNG SAI TRUONG, khong phai khoang trong. `state` la thang bac
+          DESIGNED->REVIEWED->AUTOMATED->EXECUTED->PROVEN; "dev da xac nhan" khong phai mot bac trong
+          thang do — no la NGUON ORACLE, ma thong tin do DA NAM o truong `oracle` roi.
+        recommendation: >
+          KHONG them vao enum state. Doi 4 case nay thanh `state: EXECUTED` (hoac PROVEN neu du
+          oracle_layers co evidence) va giu nguyen dong `oracle` dang co — khong mat thong tin nao.
+    decision_needed_from_lead:
+      - "Dong y them OBSERVED_DEVIATION vao enum verdict? (neu khong: 15 case do phai doi sang gia tri nao)"
+      - "Dong y doi 4 case CONFIRMED_BY_DEV -> EXECUTED? (sua file TC cua nguoi khac nen can Lead gat)"
+    until_decided: "validator tc-status.py se tiep tuc bao 19 case sai enum — day la canh bao DUNG, khong phai nhieu."
+
+  adoption_gap_2026_09_09: >
+    Đo thật: chỉ 1/nhiều file TC trong Projects/Example-Project/Modules đang dùng khối này
+    (DEMO-7019, 16 case). Các ledger khác vẫn là bảng văn xuôi → KHÔNG đọc được bằng máy.
+    Nên "MD là source-of-truth" hiện chỉ đúng cho 1 file. `tc-status.py --adoption` in ra
+    khoảng trống này; cần chuyển dần các ledger sang khối `case:` mới đóng được.

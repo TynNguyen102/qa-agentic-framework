@@ -1,0 +1,42 @@
+status: READY
+purpose: "Define the evidence and oracles required to classify an observation as a confirmed bug for NEW-PROJECT."
+oracle_priority:
+  - approved_jira_acceptance_criteria
+  - approved_confluence_frs_and_business_rules
+  - current_live_openapi_event_or_integration_contract
+  - approved_state_machine_permission_matrix_and_data_rules
+  - approved_ui_ux_design_and_content_rules
+  - database_constraints_lineage_and_reconciliation_rules
+  - approved_slo_security_accessibility_and_operational_policy
+  - previously_verified_baseline_with_same_scope_and_version
+confirmation_gates:
+  - "Expected behavior has an authoritative source for this project or is explicitly marked NEED_CONFIRM."
+  - "Actual behavior is reproduced from a controlled state with build, environment, role and data recorded."
+  - "The difference between expected and actual is observable and evidenced."
+  - "Applicable UI, API, DB, event, audit or downstream readback confirms the effect."
+  - "Environment, test-data and automation failures have been separated from product behavior."
+  - "Business/user/security/data/operational impact and affected scope are stated."
+  - "Duplicate Jira issues have been checked when access is available."
+conflict_resolution:
+  - "Live source wins over an unverified local cache; record the version and timestamp."
+  - "When Jira/Confluence expected behavior conflicts with a live API or schema contract, return NEED_CONFIRM and show both sources."
+bug_hunting_dimensions:
+  - business_invariant
+  - state_transition
+  - role_permission_and_tenant_isolation
+  - required_optional_and_conditional_fields
+  - equivalence_boundary_null_empty_malformed_and_oversized_data
+  - decision_table_and_combinatorial_conditions
+  - ordering_timing_retry_idempotency_duplicate_and_concurrency
+  - partial_failure_timeout_recovery_and_rollback
+  - cache_session_and_stale_state
+  - api_db_event_audit_and_downstream_consistency
+  - migration_historical_data_and_backward_compatibility
+  - security_accessibility_usability_reliability_and_performance_risk
+classifications:
+  CONFIRMED_DEFECT: "All material confirmation gates pass."
+  NEED_CONFIRM: "Expected behavior or source conflict is unresolved."
+  EXPECTED_BEHAVIOR: "Observed behavior matches the authoritative rule."
+  TEST_ENVIRONMENT_ISSUE: "Failure is caused by environment, dependency, access or test data."
+  AUTOMATION_ISSUE: "Failure is caused by test code, locator, fixture, assertion or runner."
+  DUPLICATE_CANDIDATE: "A materially equivalent Jira issue may already cover the defect."

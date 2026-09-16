@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mobile Feature Testing"
+  short_description: "Test mobile web native and hybrid behavior"
+  default_prompt: "Use $29-mobile-feature-testing for this QA task."

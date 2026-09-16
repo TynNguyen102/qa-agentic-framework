@@ -1,0 +1,4 @@
+interface:
+  display_name: "Security Testing"
+  short_description: "Design and execute authorized security tests"
+  default_prompt: "Use $23-security-testing for this QA task."

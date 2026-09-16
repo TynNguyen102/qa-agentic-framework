@@ -1,0 +1,267 @@
+schema_version: 1
+status: ACTIVE_DESIGN_BASELINE
+updated_at: "2026-07-19"
+purpose: >
+  Canonical coverage contract for testing across backend, API, frontend,
+  UI/UX, business flows, business logic, data, integrations and non-functional
+  risks. It makes omissions visible; it does not promise zero defects.
+
+principles:
+  - "Coverage is evidence against an explicit denominator, not a testcase count or skill count."
+  - "Every applicable coverage unit must be traced to a source/risk and have a status, owner and evidence need."
+  - "A dimension may be excluded only with N/A_WITH_REASON, source and accountable owner."
+  - "Designed, reviewed, automated, executed and proven are different states and must not be conflated."
+  - "Risk-based selection controls depth; no fixed testcase quota or exhaustive-combination claim is allowed."
+  - "No workflow may claim zero bugs, complete coverage or release safety without a defined denominator and evidence."
+  - "Only APPROVED knowledge for the active project may supply a PASS/FAIL business oracle."
+
+coverage_states:
+  ordered:
+    - NOT_ASSESSED
+    - NEED_CONFIRM
+    - DESIGNED
+    - REVIEWED
+    - AUTOMATED
+    - EXECUTED
+    - PROVEN
+  terminal_exceptions:
+    - N/A_WITH_REASON
+    - BLOCKED
+    - OUT_OF_SCOPE_WITH_OWNER
+  transition_evidence:
+    DESIGNED: "A condition or testcase exists and traces to source/risk."
+    REVIEWED: "A named reviewer or approved review artifact accepted the design."
+    AUTOMATED: "Traceable code exists and local lint/dry-run passed."
+    EXECUTED: "A scoped run record contains actual result and timestamped evidence."
+    PROVEN: "All required business and cross-layer readback oracles passed for the stated build/environment."
+
+coverage_unit:
+  id_pattern: "COV-<SCOPE>-<NNN>"
+  required_fields:
+    - id
+    - scope
+    - source_ids
+    - risk_ids
+    - dimension
+    - intent
+    - applicability
+    - priority
+    - owner
+    - status
+    - evidence_oracle
+  applicability_values: [REQUIRED, OPTIONAL_BY_RISK, N/A_WITH_REASON, NEED_CONFIRM]
+  status_values:
+    - NOT_ASSESSED
+    - NEED_CONFIRM
+    - DESIGNED
+    - REVIEWED
+    - AUTOMATED
+    - EXECUTED
+    - PROVEN
+    - N/A_WITH_REASON
+    - BLOCKED
+    - OUT_OF_SCOPE_WITH_OWNER
+
+denominator:
+  definition: >
+    All REQUIRED and selected OPTIONAL_BY_RISK coverage units in the approved
+    scope. NEED_CONFIRM and BLOCKED remain in the denominator and are reported
+    separately; they are never counted as covered.
+  required_counts:
+    - total_applicable
+    - need_confirm
+    - designed
+    - reviewed
+    - automated
+    - executed
+    - proven
+    - blocked
+    - n_a_with_reason
+    - out_of_scope_with_owner
+  rules:
+    - "Publish no percentage unless numerator, denominator, scope, build/environment and snapshot time are stated."
+    - "Count a unit once at its highest evidenced state; preserve state history in execution/audit records."
+    - "Report requirement/risk coverage separately from automation and execution coverage."
+    - "A passed subset does not erase NOT_ASSESSED, NEED_CONFIRM, BLOCKED or OUT_OF_SCOPE units."
+
+dimensions:
+  product_truth:
+    checks:
+      - objectives_and_acceptance_criteria
+      - business_invariants_and_decisions
+      - actors_roles_permissions_and_tenants
+      - lifecycle_states_and_transitions
+      - data_definitions_and_conditional_rules
+      - error_recovery_audit_and_nonfunctional_expectations
+      - source_conflicts_freshness_and_supersession
+  business_and_functional:
+    checks:
+      - happy_and_alternate_paths
+      - negative_and_invalid_operations
+      - equivalence_and_boundary_classes
+      - decision_tables_and_cross_field_rules
+      - state_sequence_time_and_expiry
+      - duplicate_idempotency_retry_and_concurrency
+      - role_tenant_and_cross_entity_isolation
+      - partial_failure_rollback_and_cleanup
+  backend_and_api:
+    profile: "Config/QA-Agent/api-coverage-profile.yaml"
+    checks:
+      - contract_and_protocol_semantics
+      - business_side_effects_and_readback
+      - authentication_authorization_and_abuse
+      - persistence_events_cache_and_downstream_consistency
+      - compatibility_resilience_and_observability
+  frontend_and_ui:
+    checks:
+      - route_guards_navigation_and_deep_links
+      - loading_empty_error_success_partial_and_stale_states
+      - form_validation_timing_messages_and_recovery
+      - state_preservation_refresh_back_forward_and_multi_tab
+      - responsive_browser_device_locale_theme_and_zoom
+      - api_error_mapping_and_no_client_only_enforcement
+      - accessibility_semantics_keyboard_focus_reflow_and_assistive_technology
+  ux_and_usability:
+    checks:
+      - persona_goal_and_task_success
+      - discoverability_learnability_efficiency_and_consistency
+      - cognitive_load_feedback_error_prevention_and_recovery
+      - terminology_content_and_localization
+      - user_impact_frequency_and_recoverability
+  end_to_end_and_business_flow:
+    checks:
+      - entry_preconditions_and_data_ownership
+      - cross_feature_sequence_and_state_handoffs
+      - cross_service_eventual_consistency_and_readback
+      - interruption_resume_retry_cancel_and_reentry
+      - compensation_rollback_cleanup_and_audit
+      - critical_outcome_and_downstream_business_effect
+  data_and_integration:
+    checks:
+      - schema_constraints_integrity_and_lineage
+      - create_update_delete_and_historical_data
+      - transaction_atomicity_reconciliation_and_migration
+      - event_order_duplicates_loss_dlq_and_replay
+      - dependency_contract_timeout_and_partial_failure
+      - privacy_masking_retention_and_tenant_separation
+  security_and_privacy:
+    checks:
+      - threat_model_and_trust_boundaries
+      - authentication_session_and_token_lifecycle
+      - object_function_property_and_tenant_authorization
+      - injection_ssrf_file_handling_and_input_abuse
+      - sensitive_data_secrets_logging_and_error_exposure
+      - rate_resource_business_flow_abuse_and_configuration
+  nonfunctional_and_operational:
+    checks:
+      - performance_capacity_spike_soak_and_volume
+      - reliability_retry_recovery_failover_rto_and_rpo
+      - compatibility_version_platform_and_configuration_parity
+      - infrastructure_routing_tls_cache_session_and_deployment
+      - observability_logs_metrics_traces_alerts_and_correlation
+      - accessibility_and_usability_targets
+  ai_and_model_output:
+    workflow: "40"
+    applies_when: "any user-visible output, decision, score, summary or retrieval is produced by a model rather than by deterministic code"
+    checks:
+      - run_context_model_prompt_version_locale_role_and_corpus_snapshot
+      - output_invariants_language_schema_refusal_and_citation_presence
+      - run_to_run_consistency_over_a_stated_repeat_count
+      - grounding_reconciled_against_the_authoritative_data_layer
+      - retrieval_scope_within_caller_role_and_tenant
+      - streaming_event_contract_terminal_event_cancel_and_partial_runs
+      - internal_detail_leakage_reasoning_events_identifiers_and_secrets
+      - prompt_injection_and_instruction_override_within_rules_of_engagement
+      - model_or_prompt_version_change_treated_as_a_regression_event
+  generated_files_and_exports:
+    workflow: "41"
+    applies_when: "the product hands the user a file — export, template, error file, report or job output"
+    checks:
+      - generation_point_inventory_server_side_versus_client_side
+      - encoding_marker_line_endings_and_delimiter_against_target_locale
+      - opens_correctly_in_the_real_consuming_application_and_locale
+      - content_contract_and_value_reconciliation_against_source_of_truth
+      - scale_empty_maximum_long_fields_and_embedded_delimiters_quotes_newlines
+      - formula_injection_neutralization_and_filename_construction
+      - export_authorization_scope_and_tenant_parity_with_the_originating_screen
+      - download_job_lifecycle_pending_timeout_expiry_redownload_and_partial
+      - recurrence_check_against_the_same_failure_class_in_other_modules
+  change_and_release:
+    checks:
+      - change_delta_and_dependency_graph
+      - impacted_and_full_regression_selection
+      - defect_history_recurrence_and_escape_patterns
+      - feature_flags_migrations_rollback_and_mixed_versions
+      - entry_exit_criteria_residual_risk_and_owner_decision
+
+depth_triggers:
+  require_workflow_26_when:
+    - irreversible_or_high_impact_effect
+    - multiple_roles_tenants_or_entities
+    - complex_state_or_conditional_logic
+    - asynchronous_or_event_driven_behavior
+    - retries_duplicates_concurrency_or_ordering
+    - historical_data_migration_or_cache_state
+    - external_dependency_or_partial_failure
+    - security_sensitive_or_abuse_prone_flow
+  require_workflow_40_when:
+    - model_generates_user_visible_text_score_summary_or_decision
+    - retrieval_augmented_answer_cites_or_queries_business_data
+    - model_prompt_version_or_provider_changed
+    - output_is_streamed_as_events_to_the_client
+  require_workflow_41_when:
+    - feature_produces_a_downloadable_file_of_any_format
+    - file_content_can_contain_the_active_language_diacritics_or_user_supplied_text
+    - export_route_exists_alongside_a_permission_scoped_screen
+    - a_file_defect_of_the_same_class_was_already_closed_in_another_module
+  selection_rules:
+    - "Cover every authoritative rule and critical invariant with a proving and, when violable, disconfirming condition."
+    - "Use EP/BVA for constrained inputs, decision tables for conditional rules, state models for lifecycles and pairwise for selected interactions."
+    - "Use higher-order/adversarial combinations only where risk justifies cost and authorization permits."
+    - "Exploratory testing uses risk-based charters; do not add arbitrary testcase rows to satisfy a quota."
+
+cross_layer_oracle:
+  candidate_layers: [UI, API, DB, EVENT, AUDIT, CACHE, FILE, QUEUE, DOWNSTREAM, LOG_TRACE]
+  rules:
+    - "Select the least-invasive authoritative layers that prove the business effect."
+    - "HTTP status, toast text, job completion or a database row alone is insufficient when another required layer can contradict it."
+    - "Record unavailable readback as BLOCKED or residual risk, not implicit PASS."
+
+workflow_routing:
+  requirement_and_plan: ["01", "02", "03"]
+  design_and_cases: ["04", "05", "06", "07", "08", "10"]
+  review_and_audit: ["09", "24", "26"]
+  execution: ["13", "14", "15", "16", "18", "19", "21", "28", "29", "31", "32"]
+  specialists: ["17", "20", "22", "23", "25", "27", "34", "35", "38", "40", "41"]
+  defect_and_retest: ["30", "36", "37", "39"]
+  reporting: ["33"]
+
+cross_layer_oracle_caveats:
+  - >
+    An empty result is not a passing observation when the interface renders API failure and
+    genuine emptiness identically. Before accepting "no results, as expected" as evidence,
+    confirm the request actually succeeded — otherwise record the check as BLOCKED, not PASS.
+  - >
+    A test that skips, is filtered out or silently returns nothing is not a passing test.
+    Automation must separate NEED_DATA from PASS; a green run built on skips is false confidence.
+  - >
+    A byte-level or parser-level check on a generated file does not prove the file opens correctly
+    in the consuming application. See dimension generated_files_and_exports.
+  - >
+    A model's own statement about what it queried or where a value came from is not evidence.
+    Reconcile against the authoritative layer. See dimension ai_and_model_output.
+
+release_gate:
+  block_confident_recommendation_when:
+    - critical_or_high_required_unit_not_assessed
+    - authoritative_oracle_need_confirm
+    - critical_business_flow_not_proven
+    - required_role_tenant_state_or_integration_blocked
+    - evidence_missing_for_reported_pass
+  mandatory_output:
+    - denominator_and_state_counts
+    - critical_gaps_and_blockers
+    - out_of_scope_with_owner
+    - residual_risk
+    - recommendation_basis
+

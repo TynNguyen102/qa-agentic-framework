@@ -1,0 +1,4 @@
+interface:
+  display_name: "Test Coverage Audit"
+  short_description: "Audit coverage types traceability and risk gaps"
+  default_prompt: "Use $24-test-coverage-audit for this QA task."

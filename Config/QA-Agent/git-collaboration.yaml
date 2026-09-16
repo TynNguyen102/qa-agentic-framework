@@ -1,0 +1,63 @@
+schema_version: 1
+status: NEED_CONFIG
+updated_at: "2026-07-18"
+purpose: "Giữ workspace merge-friendly cho nhiều QA member và nhiều AI client."
+
+repository:
+  official_url: null
+  default_branch: null
+  hosting: null
+  note: "Workspace hiện chưa là Git repository; không init hoặc push cho đến khi official repo được xác nhận."
+
+branch_policy:
+  format: "qa/<JIRA-KEY>-<short-slug>"
+  merge_method: SQUASH
+  protected_default_branch: true
+  direct_push_default_branch: false
+  one_primary_jira_scope_per_pr: true
+
+canonical_and_generated:
+  skill_source: ".agents/skills"
+  generated_skill_mirrors: [".claude/skills"]
+  sync_command: "python tools/qa_workspace.py skills-sync"
+  check_command: "python tools/qa_workspace.py skills-check"
+  rule: "Không sửa mirror thủ công. Git lưu symlink nhưng portability qua Windows/zip có rủi ro; Git không bảo toàn quan hệ hardlink. Dùng generated mirror và CI drift-check."
+
+conflict_avoidance:
+  - "Mỗi defect dùng file manifest riêng; không sửa tay generated defect index."
+  - "Mỗi audit event dùng file riêng theo timestamp-member-task."
+  - "Session state cá nhân dùng Projects/<ACTIVE_PROJECT>/session-state.local.yaml và không commit."
+  - "Confluence mirror sinh deterministic theo source ID/version/checksum; không sửa song song với live sync."
+  - "Business rule, skill core và automation framework cần owner review riêng."
+
+pull_request_requirements:
+  - jira_issue
+  - change_scope
+  - changed_test_assets
+  - evidence_or_validation_result
+  - regression_impact
+  - qmetry_cycle_or_folder_if_touched
+  - security_redaction_confirmation
+
+ownership:
+  status: NEED_CONFIG
+  codeowners: {}
+  required_groups:
+    - qa_method_owner
+    - project_business_rule_owner
+    - automation_owner
+    - security_owner_for_sensitive_changes
+
+artifact_policy:
+  commit:
+    - skills_and_profiles
+    - approved_sanitized_rules
+    - testcase_and_automation_source
+    - small_reproducible_reports
+    - defect_manifests_without_secrets
+  external_or_ignored:
+    - raw_logs
+    - browser_traces
+    - screenshots_and_videos_in_bulk
+    - performance_raw_results
+    - credentials_and_local_session_state

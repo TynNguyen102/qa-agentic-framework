@@ -1,0 +1,4 @@
+interface:
+  display_name: "Business Logic Bug Hunt"
+  short_description: "Hunt reproducible business invariant breaks"
+  default_prompt: "Use $30-business-logic-bug-hunt for this QA task."

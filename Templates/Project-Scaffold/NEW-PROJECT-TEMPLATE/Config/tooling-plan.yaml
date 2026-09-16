@@ -1,0 +1,35 @@
+tools:
+  live_api_spec:
+    purpose: "Live API contract for this project's backend"
+    status: NOT_CONFIGURED
+    url: NEED_CONFIRM
+  atlassian_rovo:
+    purpose: "Jira and Confluence read/write"
+    status: NOT_CONFIGURED
+  qmetry_mcp:
+    purpose: "QMetry testcase, folder, cycle, execution"
+    status: NOT_CONFIGURED
+  playwright:
+    purpose: "Browser UI/E2E and API execution"
+    status: NOT_INSTALLED
+  robot_framework:
+    purpose: "Keyword-driven regression automation"
+    status: NOT_CONFIGURED
+    profile: "Config/robot-framework-profile.yaml"
+    local_path_config: "qa-config.local.yaml"
+  k6:
+    purpose: "Load, performance, benchmark"
+    status: NOT_INSTALLED
+  appium:
+    purpose: "Native and hybrid mobile automation"
+    status: NOT_INSTALLED
+  db_readonly_mcp:
+    purpose: "Allowlisted SELECT and reconciliation"
+    status: NOT_CONFIGURED
+  observability_mcp:
+    purpose: "Logs, metrics, traces, correlation IDs"
+    status: NOT_CONFIGURED
+installation_policy:
+  - "Confirm the official automation stack and repository before installing dependencies."
+  - "Use environment variables or secret stores; never commit credentials."
+  - "Separate read-only tools from mutation tools and require approval for writes."

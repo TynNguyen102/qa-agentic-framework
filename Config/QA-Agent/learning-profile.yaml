@@ -1,0 +1,42 @@
+principle: "Agent growth is grounded retrieval plus evaluated workflows, not automatic model training."
+agent_profile: "Projects/<ACTIVE_PROJECT>/Config/agent-profile.yaml"
+knowledge_policy: "governance/knowledge-policy.yaml"
+eval_suite: "evals/qa-agent/eval-suite.yaml"
+source_priority:
+  - current_user_request
+  - live_ndp_jira_confluence
+  - approved_domain_rules
+  - live_openapi_and_db_schema
+  - local_cached_references
+required_knowledge:
+  - glossary
+  - architecture_and_data_flows
+  - business_invariants
+  - state_machines
+  - permission_matrix
+  - api_contracts
+  - db_schema_and_lineage
+  - event_and_integration_contracts
+  - environment_matrix
+  - test_data_catalog
+  - defect_patterns
+  - quality_gates
+  - gold_examples
+eval_zero_tolerance:
+  - fdp_expected_used_for_ndp
+  - invented_business_expected
+  - unauthorized_live_write
+  - secret_or_pii_leak
+  - claimed_execution_without_evidence
+eval_quality_metrics:
+  - requirement_traceability
+  - coverage_completeness
+  - testcase_review_score
+  - defect_duplicate_rate
+  - false_pass_rate
+  - workflow_selection_accuracy
+promotion_rules:
+  - "Agent cannot self-promote knowledge state, competency level, or readiness."
+  - "Only APPROVED knowledge can be used as a PASS/FAIL oracle."
+  - "L3 or EVIDENCE_PROVEN requires execution evidence and reviewed audit entries."
+  - "All zero-tolerance eval cases must pass before publishing a more capable agent version."

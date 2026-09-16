@@ -1,0 +1,125 @@
+schema_version: 1
+status: ACTIVE
+updated_at: "2026-07-18"
+purpose: "Lưu snapshot defect đã làm sạch, liên kết retest và regression mà không thay thế Jira làm nguồn trạng thái chính."
+
+storage:
+  source_of_truth:
+    issue_status_and_comments: JIRA
+    local_traceability_and_regression: DEFECT_MANIFEST
+  record_pattern: "Projects/<ACTIVE_PROJECT>/Defects/<local_id>/manifest.yaml"
+  template: "Templates/defect-record.yaml"
+  generated_index: "Outputs/cross-sprint/generated/defect-regression-map.yaml"
+  merge_strategy: "Mỗi defect xuyên sprint dùng một manifest riêng; index chỉ sinh tự động và không sửa tay."
+
+required_paths:
+  - schema_version
+  - local_id
+  - project.key
+  - found_in_sprint
+  - fixed_in_sprint
+  - retested_in_sprints
+  - summary
+  - lifecycle_status
+  - classification
+  - source.type
+  - fingerprint.business_invariant
+  - fingerprint.component
+  - fingerprint.operation_or_journey
+  - fingerprint.symptom_signature
+  - impact.summary
+  - duplicate_triage.verdict
+  - jira.status
+  - traceability.requirements
+  - traceability.testcases
+  - traceability.executions
+  - traceability.evidence
+  - retest.verdict
+  - regression.required
+  - regression.testcase_ids
+  - regression.automation_paths
+  - regression.last_result
+  - ownership.qa_owner_alias
+  - timestamps.created_at
+  - timestamps.updated_at
+  - security.redaction_status
+
+enums:
+  lifecycle_status:
+    - DRAFT
+    - TRIAGED
+    - CONFIRMED
+    - LOGGED
+    - IN_DEV
+    - READY_FOR_RETEST
+    - RETEST_BLOCKED
+    - REOPEN_RECOMMENDED
+    - REGRESSION_PENDING
+    - VERIFIED
+    - CLOSED
+    - REJECTED
+    - DUPLICATE
+  classification:
+    - CONFIRMED_DEFECT
+    - NEED_CONFIRM
+    - EXPECTED_BEHAVIOR
+    - TEST_ENVIRONMENT_ISSUE
+    - AUTOMATION_ISSUE
+    - DUPLICATE_CANDIDATE
+  duplicate_verdict:
+    - NOT_RUN
+    - HIGH_CONFIDENCE_DUPLICATE
+    - LIKELY_DUPLICATE
+    - RELATED
+    - POSSIBLE_REGRESSION
+    - NEW_ISSUE
+    - INSUFFICIENT_CONTEXT
+    - SEARCH_BLOCKED
+  jira_status:
+    - NOT_CREATED
+    - SNAPSHOT_CURRENT
+    - SNAPSHOT_STALE
+    - ACCESS_BLOCKED
+  retest_verdict:
+    - NOT_RUN
+    - PASS_FIXED
+    - FAIL_REPRO
+    - BLOCKED
+    - NEED_CLARIFY
+    - PARTIAL_PASS_WITH_GAP
+  regression_result:
+    - NOT_RUN
+    - PASS
+    - FAIL
+    - BLOCKED
+    - PARTIAL
+  redaction_status:
+    - PENDING
+    - VERIFIED
+
+lifecycle_rules:
+  - "Không chuyển CONFIRMED nếu thiếu authoritative expected, reproduction, evidence hoặc readback."
+  - "LOGGED yêu cầu Jira key và snapshot timestamp sau readback."
+  - "READY_FOR_RETEST phải đến từ Jira status/comment/build đã đọc, không suy đoán từ tuổi defect."
+  - "VERIFIED yêu cầu retest PASS_FIXED và regression result phù hợp với impact đã duyệt."
+  - "CLOSED chỉ phản ánh Jira readback hoặc quyết định owner; agent không tự đóng issue."
+
+ready_for_retest_trigger:
+  status: NEED_CONFIG
+  jira_statuses: []
+  required_comment_or_fields:
+    - fix_build_or_version
+    - deployment_environment
+    - change_delta_or_reference
+  rule: "Khi connector/webhook chưa cấu hình, chỉ kiểm tra trạng thái Jira theo yêu cầu; không claim đang monitor tự động."
+
+security:
+  evidence_policy: "Chỉ lưu path/URL/id/checksum và metadata tối thiểu; không nhúng log, request hoặc response nhạy cảm vào manifest."
+  prohibited:
+    - plaintext_password
+    - bearer_or_refresh_token
+    - session_cookie
+    - api_key
+    - private_key
+    - full_sensitive_curl
+    - unnecessary_personal_data
